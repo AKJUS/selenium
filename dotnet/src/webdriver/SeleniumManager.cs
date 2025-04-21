@@ -28,230 +28,229 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using static OpenQA.Selenium.SeleniumManagerResponse;
 
-namespace OpenQA.Selenium
+namespace OpenQA.Selenium;
+
+/// <summary>
+/// Wrapper for the Selenium Manager binary.
+/// This implementation is still in beta, and may change.
+/// </summary>
+public static class SeleniumManager
 {
-    /// <summary>
-    /// Wrapper for the Selenium Manager binary.
-    /// This implementation is still in beta, and may change.
-    /// </summary>
-    public static class SeleniumManager
+    internal const string DriverPathKey = "driver_path";
+    internal const string BrowserPathKey = "browser_path";
+
+    private static readonly ILogger _logger = Log.GetLogger(typeof(SeleniumManager));
+
+    private static readonly Lazy<string> _lazyBinaryFullPath = new(() =>
     {
-        internal const string DriverPathKey = "driver_path";
-        internal const string BrowserPathKey = "browser_path";
-
-        private static readonly ILogger _logger = Log.GetLogger(typeof(SeleniumManager));
-
-        private static readonly Lazy<string> _lazyBinaryFullPath = new(() =>
+        string? binaryFullPath = Environment.GetEnvironmentVariable("SE_MANAGER_PATH");
+        if (binaryFullPath == null)
         {
-            string? binaryFullPath = Environment.GetEnvironmentVariable("SE_MANAGER_PATH");
-            if (binaryFullPath == null)
-            {
-                SupportedPlatform? platform = null;
+            SupportedPlatform? platform = null;
 
 #if NET8_0_OR_GREATER
-                if (OperatingSystem.IsWindows())
-                {
-                    platform = SupportedPlatform.Windows;
-                }
-                else if (OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD())
-                {
-                    platform = SupportedPlatform.Linux;
-                }
-                else if (OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst())
-                {
-                    platform = SupportedPlatform.MacOS;
-                }
+            if (OperatingSystem.IsWindows())
+            {
+                platform = SupportedPlatform.Windows;
+            }
+            else if (OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD())
+            {
+                platform = SupportedPlatform.Linux;
+            }
+            else if (OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst())
+            {
+                platform = SupportedPlatform.MacOS;
+            }
 #else
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    platform = SupportedPlatform.Windows;
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    platform = SupportedPlatform.Linux;
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    platform = SupportedPlatform.MacOS;
-                }
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                platform = SupportedPlatform.Windows;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                platform = SupportedPlatform.Linux;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                platform = SupportedPlatform.MacOS;
+            }
 #endif
 
-                var currentDirectory = AppContext.BaseDirectory;
+            var currentDirectory = AppContext.BaseDirectory;
 
-                binaryFullPath = platform switch
-                {
-                    SupportedPlatform.Windows => Path.Combine(currentDirectory, "selenium-manager", "windows", "selenium-manager.exe"),
-                    SupportedPlatform.Linux => Path.Combine(currentDirectory, "selenium-manager", "linux", "selenium-manager"),
-                    SupportedPlatform.MacOS => Path.Combine(currentDirectory, "selenium-manager", "macos", "selenium-manager"),
-                    _ => throw new PlatformNotSupportedException(
-                                            $"Selenium Manager doesn't support your runtime platform: {RuntimeInformation.OSDescription}"),
-                };
-            }
-
-            if (!File.Exists(binaryFullPath))
+            binaryFullPath = platform switch
             {
-                throw new WebDriverException($"Unable to locate or obtain Selenium Manager binary at {binaryFullPath}");
-            }
-
-            return binaryFullPath;
-        });
-
-        /// <summary>
-        /// Determines the location of the browser and driver binaries.
-        /// </summary>
-        /// <param name="arguments">List of arguments to use when invoking Selenium Manager.</param>
-        /// <returns>
-        /// An array with two entries, one for the driver path, and another one for the browser path.
-        /// </returns>
-        public static Dictionary<string, string> BinaryPaths(string arguments)
-        {
-            StringBuilder argsBuilder = new StringBuilder(arguments);
-            argsBuilder.Append(" --language-binding csharp");
-            argsBuilder.Append(" --output json");
-            if (_logger.IsEnabled(LogEventLevel.Debug))
-            {
-                argsBuilder.Append(" --debug");
-            }
-
-            var smCommandResult = RunCommand(_lazyBinaryFullPath.Value, argsBuilder.ToString());
-            Dictionary<string, string> binaryPaths = new()
-            {
-                { BrowserPathKey, smCommandResult.BrowserPath },
-                { DriverPathKey, smCommandResult.DriverPath }
+                SupportedPlatform.Windows => Path.Combine(currentDirectory, "selenium-manager", "windows", "selenium-manager.exe"),
+                SupportedPlatform.Linux => Path.Combine(currentDirectory, "selenium-manager", "linux", "selenium-manager"),
+                SupportedPlatform.MacOS => Path.Combine(currentDirectory, "selenium-manager", "macos", "selenium-manager"),
+                _ => throw new PlatformNotSupportedException(
+                                        $"Selenium Manager doesn't support your runtime platform: {RuntimeInformation.OSDescription}"),
             };
+        }
 
+        if (!File.Exists(binaryFullPath))
+        {
+            throw new WebDriverException($"Unable to locate or obtain Selenium Manager binary at {binaryFullPath}");
+        }
+
+        return binaryFullPath;
+    });
+
+    /// <summary>
+    /// Determines the location of the browser and driver binaries.
+    /// </summary>
+    /// <param name="arguments">List of arguments to use when invoking Selenium Manager.</param>
+    /// <returns>
+    /// An array with two entries, one for the driver path, and another one for the browser path.
+    /// </returns>
+    public static Dictionary<string, string> BinaryPaths(string arguments)
+    {
+        StringBuilder argsBuilder = new StringBuilder(arguments);
+        argsBuilder.Append(" --language-binding csharp");
+        argsBuilder.Append(" --output json");
+        if (_logger.IsEnabled(LogEventLevel.Debug))
+        {
+            argsBuilder.Append(" --debug");
+        }
+
+        var smCommandResult = RunCommand(_lazyBinaryFullPath.Value, argsBuilder.ToString());
+        Dictionary<string, string> binaryPaths = new()
+        {
+            { BrowserPathKey, smCommandResult.BrowserPath },
+            { DriverPathKey, smCommandResult.DriverPath }
+        };
+
+        if (_logger.IsEnabled(LogEventLevel.Trace))
+        {
+            _logger.Trace($"Driver path: {binaryPaths[DriverPathKey]}");
+            _logger.Trace($"Browser path: {binaryPaths[BrowserPathKey]}");
+        }
+
+        return binaryPaths;
+    }
+
+    /// <summary>
+    /// Executes a process with the given arguments.
+    /// </summary>
+    /// <param name="fileName">The path to the Selenium Manager.</param>
+    /// <param name="arguments">The switches to be used by Selenium Manager.</param>
+    /// <returns>
+    /// the standard output of the execution.
+    /// </returns>
+    private static ResultResponse RunCommand(string fileName, string arguments)
+    {
+        Process process = new Process();
+        process.StartInfo.FileName = _lazyBinaryFullPath.Value;
+        process.StartInfo.Arguments = arguments;
+        process.StartInfo.UseShellExecute = false;
+        process.StartInfo.CreateNoWindow = true;
+        process.StartInfo.StandardErrorEncoding = Encoding.UTF8;
+        process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
+        process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.RedirectStandardError = true;
+
+        StringBuilder outputBuilder = new StringBuilder();
+        StringBuilder errorOutputBuilder = new StringBuilder();
+
+        DataReceivedEventHandler outputHandler = (sender, e) => outputBuilder.AppendLine(e.Data);
+        DataReceivedEventHandler errorOutputHandler = (sender, e) => errorOutputBuilder.AppendLine(e.Data);
+
+        try
+        {
+            process.OutputDataReceived += outputHandler;
+            process.ErrorDataReceived += errorOutputHandler;
+
+            process.Start();
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                // We do not log any warnings coming from Selenium Manager like the other bindings, as we don't have any logging in the .NET bindings
+
+                var exceptionMessageBuilder = new StringBuilder($"Selenium Manager process exited abnormally with {process.ExitCode} code: {fileName} {arguments}");
+
+                if (!string.IsNullOrWhiteSpace(errorOutputBuilder.ToString()))
+                {
+                    exceptionMessageBuilder.AppendLine();
+                    exceptionMessageBuilder.AppendLine("Error Output >>");
+                    exceptionMessageBuilder.Append(errorOutputBuilder);
+                    exceptionMessageBuilder.AppendLine("<<");
+                }
+
+                if (!string.IsNullOrWhiteSpace(outputBuilder.ToString()))
+                {
+                    exceptionMessageBuilder.AppendLine();
+                    exceptionMessageBuilder.AppendLine("Standard Output >>");
+                    exceptionMessageBuilder.Append(outputBuilder);
+                    exceptionMessageBuilder.AppendLine("<<");
+                }
+
+                throw new WebDriverException(exceptionMessageBuilder.ToString());
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new WebDriverException($"Error starting process: {fileName} {arguments}", ex);
+        }
+        finally
+        {
+            process.OutputDataReceived -= outputHandler;
+            process.ErrorDataReceived -= errorOutputHandler;
+        }
+
+        string output = outputBuilder.ToString().Trim();
+
+        SeleniumManagerResponse jsonResponse;
+
+        try
+        {
+            jsonResponse = JsonSerializer.Deserialize(output, SeleniumManagerSerializerContext.Default.SeleniumManagerResponse)!;
+        }
+        catch (Exception ex)
+        {
+            throw new WebDriverException($"Error deserializing Selenium Manager's response: {output}", ex);
+        }
+
+        if (jsonResponse.Logs is not null)
+        {
+            // Treat SM's logs always as Trace to avoid SM writing at Info level
             if (_logger.IsEnabled(LogEventLevel.Trace))
             {
-                _logger.Trace($"Driver path: {binaryPaths[DriverPathKey]}");
-                _logger.Trace($"Browser path: {binaryPaths[BrowserPathKey]}");
-            }
-
-            return binaryPaths;
-        }
-
-        /// <summary>
-        /// Executes a process with the given arguments.
-        /// </summary>
-        /// <param name="fileName">The path to the Selenium Manager.</param>
-        /// <param name="arguments">The switches to be used by Selenium Manager.</param>
-        /// <returns>
-        /// the standard output of the execution.
-        /// </returns>
-        private static ResultResponse RunCommand(string fileName, string arguments)
-        {
-            Process process = new Process();
-            process.StartInfo.FileName = _lazyBinaryFullPath.Value;
-            process.StartInfo.Arguments = arguments;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.StandardErrorEncoding = Encoding.UTF8;
-            process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-
-            StringBuilder outputBuilder = new StringBuilder();
-            StringBuilder errorOutputBuilder = new StringBuilder();
-
-            DataReceivedEventHandler outputHandler = (sender, e) => outputBuilder.AppendLine(e.Data);
-            DataReceivedEventHandler errorOutputHandler = (sender, e) => errorOutputBuilder.AppendLine(e.Data);
-
-            try
-            {
-                process.OutputDataReceived += outputHandler;
-                process.ErrorDataReceived += errorOutputHandler;
-
-                process.Start();
-
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-
-                process.WaitForExit();
-
-                if (process.ExitCode != 0)
+                foreach (var entry in jsonResponse.Logs)
                 {
-                    // We do not log any warnings coming from Selenium Manager like the other bindings, as we don't have any logging in the .NET bindings
-
-                    var exceptionMessageBuilder = new StringBuilder($"Selenium Manager process exited abnormally with {process.ExitCode} code: {fileName} {arguments}");
-
-                    if (!string.IsNullOrWhiteSpace(errorOutputBuilder.ToString()))
-                    {
-                        exceptionMessageBuilder.AppendLine();
-                        exceptionMessageBuilder.AppendLine("Error Output >>");
-                        exceptionMessageBuilder.Append(errorOutputBuilder);
-                        exceptionMessageBuilder.AppendLine("<<");
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(outputBuilder.ToString()))
-                    {
-                        exceptionMessageBuilder.AppendLine();
-                        exceptionMessageBuilder.AppendLine("Standard Output >>");
-                        exceptionMessageBuilder.Append(outputBuilder);
-                        exceptionMessageBuilder.AppendLine("<<");
-                    }
-
-                    throw new WebDriverException(exceptionMessageBuilder.ToString());
+                    _logger.Trace($"{entry.Level} {entry.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                throw new WebDriverException($"Error starting process: {fileName} {arguments}", ex);
-            }
-            finally
-            {
-                process.OutputDataReceived -= outputHandler;
-                process.ErrorDataReceived -= errorOutputHandler;
-            }
-
-            string output = outputBuilder.ToString().Trim();
-
-            SeleniumManagerResponse jsonResponse;
-
-            try
-            {
-                jsonResponse = JsonSerializer.Deserialize(output, SeleniumManagerSerializerContext.Default.SeleniumManagerResponse)!;
-            }
-            catch (Exception ex)
-            {
-                throw new WebDriverException($"Error deserializing Selenium Manager's response: {output}", ex);
-            }
-
-            if (jsonResponse.Logs is not null)
-            {
-                // Treat SM's logs always as Trace to avoid SM writing at Info level
-                if (_logger.IsEnabled(LogEventLevel.Trace))
-                {
-                    foreach (var entry in jsonResponse.Logs)
-                    {
-                        _logger.Trace($"{entry.Level} {entry.Message}");
-                    }
-                }
-            }
-
-            return jsonResponse.Result;
         }
+
+        return jsonResponse.Result;
     }
+}
 
-    internal sealed record SeleniumManagerResponse(IReadOnlyList<LogEntryResponse> Logs, ResultResponse Result)
-    {
-        public sealed record LogEntryResponse(string Level, string Message);
+internal sealed record SeleniumManagerResponse(IReadOnlyList<LogEntryResponse> Logs, ResultResponse Result)
+{
+    public sealed record LogEntryResponse(string Level, string Message);
 
-        public sealed record ResultResponse
-        (
-            [property: JsonPropertyName(SeleniumManager.DriverPathKey)]
-            string DriverPath,
-            [property: JsonPropertyName(SeleniumManager.BrowserPathKey)]
-            string BrowserPath
-        );
-    }
+    public sealed record ResultResponse
+    (
+        [property: JsonPropertyName(SeleniumManager.DriverPathKey)]
+        string DriverPath,
+        [property: JsonPropertyName(SeleniumManager.BrowserPathKey)]
+        string BrowserPath
+    );
+}
 
-    [JsonSerializable(typeof(SeleniumManagerResponse))]
-    [JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
-    internal sealed partial class SeleniumManagerSerializerContext : JsonSerializerContext;
+[JsonSerializable(typeof(SeleniumManagerResponse))]
+[JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
+internal sealed partial class SeleniumManagerSerializerContext : JsonSerializerContext;
 
-    internal enum SupportedPlatform
-    {
-        Windows,
-        Linux,
-        MacOS
-    }
+internal enum SupportedPlatform
+{
+    Windows,
+    Linux,
+    MacOS
 }

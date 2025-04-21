@@ -21,61 +21,60 @@ using OpenQA.Selenium.DevTools.V133.Log;
 using System;
 using System.Threading.Tasks;
 
-namespace OpenQA.Selenium.DevTools.V133
+namespace OpenQA.Selenium.DevTools.V133;
+
+/// <summary>
+/// Class containing the browser's log as referenced by version 133 of the DevTools Protocol.
+/// </summary>
+public class V133Log : DevTools.Log
 {
+    private LogAdapter adapter;
+
     /// <summary>
-    /// Class containing the browser's log as referenced by version 133 of the DevTools Protocol.
+    /// Initializes a new instance of the <see cref="V133Log"/> class.
     /// </summary>
-    public class V133Log : DevTools.Log
+    /// <param name="adapter">The adapter for the Log domain.</param>
+    /// <exception cref="ArgumentNullException">If <paramref name="adapter"/> is <see langword="null"/>.</exception>
+    public V133Log(LogAdapter adapter)
     {
-        private LogAdapter adapter;
+        this.adapter = adapter ?? throw new ArgumentNullException(nameof(adapter));
+        this.adapter.EntryAdded += OnAdapterEntryAdded;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="V133Log"/> class.
-        /// </summary>
-        /// <param name="adapter">The adapter for the Log domain.</param>
-        /// <exception cref="ArgumentNullException">If <paramref name="adapter"/> is <see langword="null"/>.</exception>
-        public V133Log(LogAdapter adapter)
-        {
-            this.adapter = adapter ?? throw new ArgumentNullException(nameof(adapter));
-            this.adapter.EntryAdded += OnAdapterEntryAdded;
-        }
+    /// <summary>
+    /// Asynchronously enables manipulation of the browser's log.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    public override async Task Enable()
+    {
+        await adapter.Enable().ConfigureAwait(false);
+    }
 
-        /// <summary>
-        /// Asynchronously enables manipulation of the browser's log.
-        /// </summary>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        public override async Task Enable()
-        {
-            await adapter.Enable().ConfigureAwait(false);
-        }
+    /// <summary>
+    /// Asynchronously disables manipulation of the browser's log.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    public override async Task Disable()
+    {
+        await adapter.Disable().ConfigureAwait(false);
+    }
 
-        /// <summary>
-        /// Asynchronously disables manipulation of the browser's log.
-        /// </summary>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        public override async Task Disable()
-        {
-            await adapter.Disable().ConfigureAwait(false);
-        }
+    /// <summary>
+    /// Asynchronously clears the browser's log.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    public override async Task Clear()
+    {
+        await adapter.Clear().ConfigureAwait(false);
+    }
 
-        /// <summary>
-        /// Asynchronously clears the browser's log.
-        /// </summary>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        public override async Task Clear()
-        {
-            await adapter.Clear().ConfigureAwait(false);
-        }
+    private void OnAdapterEntryAdded(object? sender, Log.EntryAddedEventArgs e)
+    {
+        var entry = new LogEntry(
+            kind: e.Entry.Source.ToString(),
+            message: e.Entry.Text
+        );
 
-        private void OnAdapterEntryAdded(object? sender, Log.EntryAddedEventArgs e)
-        {
-            var entry = new LogEntry(
-                kind: e.Entry.Source.ToString(),
-                message: e.Entry.Text
-            );
-
-            this.OnEntryAdded(new EntryAddedEventArgs(entry));
-        }
+        this.OnEntryAdded(new EntryAddedEventArgs(entry));
     }
 }

@@ -19,53 +19,52 @@
 
 using System;
 
-namespace OpenQA.Selenium.DevTools.V133
+namespace OpenQA.Selenium.DevTools.V133;
+
+/// <summary>
+/// Class containing the domain implementation for version 133 of the DevTools Protocol.
+/// </summary>
+public class V133Domains : DevToolsDomains
 {
+    private readonly DevToolsSessionDomains domains;
+
     /// <summary>
-    /// Class containing the domain implementation for version 133 of the DevTools Protocol.
+    /// Initializes a new instance of the V133Domains class.
     /// </summary>
-    public class V133Domains : DevToolsDomains
+    /// <param name="session">The DevToolsSession to use with this set of domains.</param>
+    /// <exception cref="ArgumentNullException">If <paramref name="session"/> is <see langword="null"/>.</exception>
+    public V133Domains(DevToolsSession session)
     {
-        private readonly DevToolsSessionDomains domains;
-
-        /// <summary>
-        /// Initializes a new instance of the V133Domains class.
-        /// </summary>
-        /// <param name="session">The DevToolsSession to use with this set of domains.</param>
-        /// <exception cref="ArgumentNullException">If <paramref name="session"/> is <see langword="null"/>.</exception>
-        public V133Domains(DevToolsSession session)
-        {
-            this.domains = new DevToolsSessionDomains(session ?? throw new ArgumentNullException(nameof(session)));
-        }
-
-        /// <summary>
-        /// Gets the DevTools Protocol version for which this class is valid.
-        /// </summary>
-        public static int DevToolsVersion => 133;
-
-        /// <summary>
-        /// Gets the version-specific domains for the DevTools session. This value must be cast to a version specific type to be at all useful.
-        /// </summary>
-        public override DevTools.DevToolsSessionDomains VersionSpecificDomains => this.domains;
-
-        /// <summary>
-        /// Gets the object used for manipulating network information in the browser.
-        /// </summary>
-        public override DevTools.Network Network => new V133Network(domains.Network, domains.Fetch);
-
-        /// <summary>
-        /// Gets the object used for manipulating the browser's JavaScript execution.
-        /// </summary>
-        public override JavaScript JavaScript => new V133JavaScript(domains.Runtime, domains.Page);
-
-        /// <summary>
-        /// Gets the object used for manipulating DevTools Protocol targets.
-        /// </summary>
-        public override DevTools.Target Target => new V133Target(domains.Target);
-
-        /// <summary>
-        /// Gets the object used for manipulating the browser's logs.
-        /// </summary>
-        public override DevTools.Log Log => new V133Log(domains.Log);
+        this.domains = new DevToolsSessionDomains(session ?? throw new ArgumentNullException(nameof(session)));
     }
+
+    /// <summary>
+    /// Gets the DevTools Protocol version for which this class is valid.
+    /// </summary>
+    public static int DevToolsVersion => 133;
+
+    /// <summary>
+    /// Gets the version-specific domains for the DevTools session. This value must be cast to a version specific type to be at all useful.
+    /// </summary>
+    public override DevTools.DevToolsSessionDomains VersionSpecificDomains => this.domains;
+
+    /// <summary>
+    /// Gets the object used for manipulating network information in the browser.
+    /// </summary>
+    public override DevTools.Network Network => new V133Network(domains.Network, domains.Fetch);
+
+    /// <summary>
+    /// Gets the object used for manipulating the browser's JavaScript execution.
+    /// </summary>
+    public override JavaScript JavaScript => new V133JavaScript(domains.Runtime, domains.Page);
+
+    /// <summary>
+    /// Gets the object used for manipulating DevTools Protocol targets.
+    /// </summary>
+    public override DevTools.Target Target => new V133Target(domains.Target);
+
+    /// <summary>
+    /// Gets the object used for manipulating the browser's logs.
+    /// </summary>
+    public override DevTools.Log Log => new V133Log(domains.Log);
 }
