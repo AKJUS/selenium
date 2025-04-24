@@ -6,7 +6,7 @@ cryptography==42.0.8
 secretstorage==3.3.3
 debugpy==1.8.11
 filetype==1.2.0
-h11==0.14.0
+h11==0.16.0
 idna==3.10
 importlib-metadata==6.8.0
 inflection==0.5.1
