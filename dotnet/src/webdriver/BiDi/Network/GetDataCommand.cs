@@ -1,4 +1,4 @@
-// <copyright file="StableChannelChromeDriver.cs" company="Selenium Committers">
+// <copyright file="GetDataCommand.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,28 +17,20 @@
 // under the License.
 // </copyright>
 
-namespace OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.BiDi.Communication;
 
-public class StableChannelChromeDriver : ChromeDriver
+namespace OpenQA.Selenium.BiDi.Network;
+
+internal sealed class GetDataCommand(GetDataParameters @params)
+    : Command<GetDataParameters, GetDataResult>(@params, "network.getData");
+
+internal sealed record GetDataParameters(DataType DataType, Request Request, Collector? Collector, bool? Disown) : Parameters;
+
+public sealed class GetDataOptions : CommandOptions
 {
-    public StableChannelChromeDriver()
-        : base(DefaultOptions)
-    {
-    }
+    public Collector? Collector { get; set; }
 
-    // Required for dynamic setting with `EnvironmentManager.Instance.CreateDriverInstance(options)`
-    public StableChannelChromeDriver(ChromeOptions options)
-        : base(options)
-    {
-    }
-
-    public StableChannelChromeDriver(ChromeDriverService service, ChromeOptions options)
-        : base(service, options)
-    {
-    }
-
-    public static ChromeOptions DefaultOptions
-    {
-        get { return new ChromeOptions(); }
-    }
+    public bool? Disown { get; set; }
 }
+
+public sealed record GetDataResult(BytesValue Bytes) : EmptyResult;

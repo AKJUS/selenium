@@ -1,4 +1,4 @@
-// <copyright file="StableChannelChromeDriver.cs" company="Selenium Committers">
+// <copyright file="RemoveDataCollectorCommand.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,28 +17,13 @@
 // under the License.
 // </copyright>
 
-namespace OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.BiDi.Communication;
 
-public class StableChannelChromeDriver : ChromeDriver
-{
-    public StableChannelChromeDriver()
-        : base(DefaultOptions)
-    {
-    }
+namespace OpenQA.Selenium.BiDi.Network;
 
-    // Required for dynamic setting with `EnvironmentManager.Instance.CreateDriverInstance(options)`
-    public StableChannelChromeDriver(ChromeOptions options)
-        : base(options)
-    {
-    }
+internal sealed class RemoveDataCollectorCommand(RemoveDataCollectorParameters @params)
+    : Command<RemoveDataCollectorParameters, EmptyResult>(@params, "network.removeDataCollector");
 
-    public StableChannelChromeDriver(ChromeDriverService service, ChromeOptions options)
-        : base(service, options)
-    {
-    }
+internal sealed record RemoveDataCollectorParameters(Collector Collector) : Parameters;
 
-    public static ChromeOptions DefaultOptions
-    {
-        get { return new ChromeOptions(); }
-    }
-}
+public class RemoveDataCollectorOptions : CommandOptions;

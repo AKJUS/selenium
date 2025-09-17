@@ -1,4 +1,4 @@
-// <copyright file="StableChannelChromeDriver.cs" company="Selenium Committers">
+// <copyright file="CollectorConverter.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,28 +17,31 @@
 // under the License.
 // </copyright>
 
-namespace OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.BiDi.Network;
+using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-public class StableChannelChromeDriver : ChromeDriver
+namespace OpenQA.Selenium.BiDi.Communication.Json.Converters;
+
+internal class CollectorConverter : JsonConverter<Collector>
 {
-    public StableChannelChromeDriver()
-        : base(DefaultOptions)
+    private readonly BiDi _bidi;
+
+    public CollectorConverter(BiDi bidi)
     {
+        _bidi = bidi;
     }
 
-    // Required for dynamic setting with `EnvironmentManager.Instance.CreateDriverInstance(options)`
-    public StableChannelChromeDriver(ChromeOptions options)
-        : base(options)
+    public override Collector? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
+        var id = reader.GetString();
+
+        return new Collector(_bidi, id!);
     }
 
-    public StableChannelChromeDriver(ChromeDriverService service, ChromeOptions options)
-        : base(service, options)
+    public override void Write(Utf8JsonWriter writer, Collector value, JsonSerializerOptions options)
     {
-    }
-
-    public static ChromeOptions DefaultOptions
-    {
-        get { return new ChromeOptions(); }
+        writer.WriteStringValue(value.Id);
     }
 }
