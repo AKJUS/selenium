@@ -3,7 +3,7 @@ PATH
   specs:
     selenium-devtools (0.142.0)
       selenium-webdriver (~> 4.2)
-    selenium-webdriver (4.38.0)
+    selenium-webdriver (4.39.0.nightly)
       base64 (~> 0.2)
       logger (~> 1.4)
       rexml (~> 3.2, >= 3.2.5)
@@ -148,7 +148,7 @@ GEM
       lint_roller (~> 1.1)
       rubocop (~> 1.72, >= 1.72.1)
     ruby-progressbar (1.13.0)
-    rubyzip (3.2.0)
+    rubyzip (3.2.1)
     securerandom (0.4.1)
     steep (1.5.3)
       activesupport (>= 5.1)
