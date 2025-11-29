@@ -1,4 +1,4 @@
-// <copyright file="Module.cs" company="Selenium Committers">
+// <copyright file="PermissionsBiDiExtensions.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,29 +17,20 @@
 // under the License.
 // </copyright>
 
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using OpenQA.Selenium.BiDi.Extensions.Permissions;
+using System;
 
-namespace OpenQA.Selenium.BiDi;
+namespace OpenQA.Selenium.BiDi.Permissions;
 
-public abstract class Module
+public static class PermissionsBiDiExtensions
 {
-    protected Broker Broker { get; private set; }
-
-    internal JsonSerializerContext JsonContext { get; private set; }
-
-    protected abstract JsonSerializerContext CreateJsonContext(JsonSerializerOptions options);
-
-    public static TModule Create<TModule>(BiDi bidi, JsonSerializerOptions jsonOptions, JsonSerializerContext? cachedContext = null)
-        where TModule : Module, new()
+    public static PermissionsModule AsPermissions(this BiDi bidi)
     {
-        TModule module = new()
+        if (bidi is null)
         {
-            Broker = bidi.Broker,
-        };
+            throw new ArgumentNullException(nameof(bidi));
+        }
 
-        module.JsonContext = cachedContext ?? module.CreateJsonContext(jsonOptions);
-
-        return module;
+        return Module.Create<PermissionsModule>(bidi, bidi.DefaultBiDiOptions());
     }
 }

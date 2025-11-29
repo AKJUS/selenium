@@ -17,13 +17,18 @@
 // under the License.
 // </copyright>
 
+using OpenQA.Selenium.BiDi.Json;
 using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace OpenQA.Selenium.BiDi.BrowsingContext;
 
 public sealed class BrowsingContextModule : Module
 {
+    internal new BiDiJsonSerializerContext JsonContext => (BiDiJsonSerializerContext)base.JsonContext;
+
     public async Task<CreateResult> CreateAsync(ContextType type, CreateOptions? options = null)
     {
         var @params = new CreateParameters(type, options?.ReferenceContext, options?.Background, options?.UserContext);
@@ -246,5 +251,9 @@ public sealed class BrowsingContextModule : Module
     public async Task<Subscription> OnUserPromptClosedAsync(Action<UserPromptClosedEventArgs> handler, SubscriptionOptions? options = null)
     {
         return await Broker.SubscribeAsync("browsingContext.userPromptClosed", handler, options, JsonContext.UserPromptClosedEventArgs).ConfigureAwait(false);
+    }
+    protected override JsonSerializerContext CreateJsonContext(JsonSerializerOptions options)
+    {
+        return new BiDiJsonSerializerContext(options);
     }
 }

@@ -17,14 +17,19 @@
 // under the License.
 // </copyright>
 
+using OpenQA.Selenium.BiDi.Json;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace OpenQA.Selenium.BiDi.Script;
 
 public sealed class ScriptModule : Module
 {
+    internal new BiDiJsonSerializerContext JsonContext => (BiDiJsonSerializerContext)base.JsonContext;
+
     public async Task<EvaluateResult> EvaluateAsync(string expression, bool awaitPromise, Target target, EvaluateOptions? options = null)
     {
         var @params = new EvaluateParameters(expression, target, awaitPromise, options?.ResultOwnership, options?.SerializationOptions, options?.UserActivation);
@@ -109,5 +114,9 @@ public sealed class ScriptModule : Module
     public async Task<Subscription> OnRealmDestroyedAsync(Action<RealmDestroyedEventArgs> handler, SubscriptionOptions? options = null)
     {
         return await Broker.SubscribeAsync("script.realmDestroyed", handler, options, JsonContext.RealmDestroyedEventArgs).ConfigureAwait(false);
+    }
+    protected override JsonSerializerContext CreateJsonContext(JsonSerializerOptions options)
+    {
+        return new BiDiJsonSerializerContext(options);
     }
 }

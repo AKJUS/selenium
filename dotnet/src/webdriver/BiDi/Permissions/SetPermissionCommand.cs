@@ -1,4 +1,4 @@
-// <copyright file="Module.cs" company="Selenium Committers">
+// <copyright file="SetPermissionCommand.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,29 +17,20 @@
 // under the License.
 // </copyright>
 
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using OpenQA.Selenium.BiDi.Browser;
 
-namespace OpenQA.Selenium.BiDi;
+namespace OpenQA.Selenium.BiDi.Permissions;
 
-public abstract class Module
+internal class SetPermissionCommand(SetPermissionCommandParameters @params)
+    : Command<SetPermissionCommandParameters, SetPermissionResult>(@params, "permissions.setPermission");
+
+internal record SetPermissionCommandParameters(PermissionDescriptor Descriptor, PermissionState State, string Origin, string? EmbeddedOrigin, UserContext? UserContext) : Parameters;
+
+public class SetPermissionOptions : CommandOptions
 {
-    protected Broker Broker { get; private set; }
+    public string? EmbeddedOrigin { get; set; }
 
-    internal JsonSerializerContext JsonContext { get; private set; }
-
-    protected abstract JsonSerializerContext CreateJsonContext(JsonSerializerOptions options);
-
-    public static TModule Create<TModule>(BiDi bidi, JsonSerializerOptions jsonOptions, JsonSerializerContext? cachedContext = null)
-        where TModule : Module, new()
-    {
-        TModule module = new()
-        {
-            Broker = bidi.Broker,
-        };
-
-        module.JsonContext = cachedContext ?? module.CreateJsonContext(jsonOptions);
-
-        return module;
-    }
+    public UserContext? UserContext { get; set; }
 }
+
+public sealed record SetPermissionResult : EmptyResult;
