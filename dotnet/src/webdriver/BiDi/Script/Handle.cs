@@ -17,17 +17,33 @@
 // under the License.
 // </copyright>
 
+using System;
+using System.Text.Json.Serialization;
+
 namespace OpenQA.Selenium.BiDi.Script;
 
-public sealed class Handle
+public sealed record Handle
 {
-    private readonly BiDi _bidi;
-
     public Handle(BiDi bidi, string id)
+        : this(id)
     {
-        _bidi = bidi;
+        BiDi = bidi ?? throw new ArgumentNullException(nameof(bidi));
+    }
+
+    [JsonConstructor]
+    internal Handle(string id)
+    {
         Id = id;
     }
 
-    public string Id { get; }
+    internal string Id { get; }
+
+    private BiDi? _bidi;
+
+    [JsonIgnore]
+    public BiDi BiDi
+    {
+        get => _bidi ?? throw new InvalidOperationException($"{nameof(BiDi)} instance has not been hydrated.");
+        internal set => _bidi = value;
+    }
 }

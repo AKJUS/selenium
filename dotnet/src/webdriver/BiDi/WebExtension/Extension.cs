@@ -17,24 +17,33 @@
 // under the License.
 // </copyright>
 
-using System.Threading.Tasks;
+using System;
+using System.Text.Json.Serialization;
 
 namespace OpenQA.Selenium.BiDi.WebExtension;
 
-public sealed class Extension
+public sealed record Extension
 {
-    private readonly BiDi _bidi;
-
     public Extension(BiDi bidi, string id)
+        : this(id)
     {
-        _bidi = bidi;
+        BiDi = bidi ?? throw new ArgumentNullException(nameof(bidi));
+    }
+
+    [JsonConstructor]
+    internal Extension(string id)
+    {
         Id = id;
     }
 
     internal string Id { get; }
 
-    public Task UninstallAsync(UninstallOptions? options = null)
+    private BiDi? _bidi;
+
+    [JsonIgnore]
+    public BiDi BiDi
     {
-        return _bidi.WebExtension.UninstallAsync(this, options);
+        get => _bidi ?? throw new InvalidOperationException($"{nameof(BiDi)} instance has not been hydrated.");
+        internal set => _bidi = value;
     }
 }

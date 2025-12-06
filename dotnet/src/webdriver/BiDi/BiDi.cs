@@ -31,12 +31,28 @@ public sealed class BiDi : IAsyncDisposable
 {
     private readonly ConcurrentDictionary<Type, Module> _modules = new();
 
+    private readonly JsonSerializerOptions _jsonOptions;
+
     private BiDi(string url)
     {
         var uri = new Uri(url);
 
         Broker = new Broker(this, uri);
+
+        _jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+
+            Converters =
+            {
+                new DateTimeOffsetConverter(),
+            }
+        };
     }
+
+    private Broker Broker { get; }
 
     internal Session.SessionModule SessionModule => AsModule<Session.SessionModule>();
 
@@ -85,35 +101,6 @@ public sealed class BiDi : IAsyncDisposable
 
     public T AsModule<T>() where T : Module, new()
     {
-        return (T)_modules.GetOrAdd(typeof(T), _ => Module.Create<T>(this, Broker, GetJsonOptions()));
-    }
-
-    private Broker Broker { get; }
-
-    private JsonSerializerOptions GetJsonOptions()
-    {
-        return new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-
-            // BiDi returns special numbers such as "NaN" as strings
-            // Additionally, -0 is returned as a string "-0"
-            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals | JsonNumberHandling.AllowReadingFromString,
-            Converters =
-            {
-                new BrowsingContextConverter(this),
-                new BrowserUserContextConverter(this),
-                new CollectorConverter(this),
-                new InterceptConverter(this),
-                new HandleConverter(this),
-                new InternalIdConverter(this),
-                new PreloadScriptConverter(this),
-                new RealmConverter(this),
-                new DateTimeOffsetConverter(),
-                new WebExtensionConverter(this),
-            }
-        };
+        return (T)_modules.GetOrAdd(typeof(T), _ => Module.Create<T>(this, Broker, _jsonOptions));
     }
 }

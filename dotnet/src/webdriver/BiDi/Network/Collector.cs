@@ -18,41 +18,31 @@
 // </copyright>
 
 using System;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace OpenQA.Selenium.BiDi.Network;
 
-public sealed class Collector : IAsyncDisposable
+public sealed record Collector
 {
-    private readonly BiDi _bidi;
-
-    internal Collector(BiDi bidi, string id)
+    public Collector(BiDi bidi, string id)
+        : this(id)
     {
-        _bidi = bidi;
+        BiDi = bidi ?? throw new ArgumentNullException(nameof(bidi));
+    }
+
+    [JsonConstructor]
+    internal Collector(string id)
+    {
         Id = id;
     }
-
     internal string Id { get; }
 
-    public async Task RemoveAsync()
-    {
-        await _bidi.Network.RemoveDataCollectorAsync(this).ConfigureAwait(false);
-    }
+    private BiDi? _bidi;
 
-    public async ValueTask DisposeAsync()
+    [JsonIgnore]
+    public BiDi BiDi
     {
-        await RemoveAsync();
-    }
-
-    public override bool Equals(object? obj)
-    {
-        if (obj is Collector collectortObj) return collectortObj.Id == Id;
-
-        return false;
-    }
-
-    public override int GetHashCode()
-    {
-        return Id.GetHashCode();
+        get => _bidi ?? throw new InvalidOperationException($"{nameof(BiDi)} instance has not been hydrated.");
+        internal set => _bidi = value;
     }
 }

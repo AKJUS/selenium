@@ -304,6 +304,8 @@ public sealed class Broker : IAsyncDisposable
                 {
                     var eventArgs = (EventArgs)JsonSerializer.Deserialize(ref paramsReader, eventInfo)!;
 
+                    eventArgs.BiDi = _bidi;
+
                     var messageEvent = (method, eventArgs);
                     _pendingEvents.Add(messageEvent);
                 }

@@ -17,6 +17,7 @@
 // under the License.
 // </copyright>
 
+using OpenQA.Selenium.BiDi.Json.Converters;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -48,9 +49,18 @@ public sealed class StorageModule : Module
         return await Broker.ExecuteCommandAsync(new SetCookieCommand(@params), options, _jsonContext.SetCookieCommand, _jsonContext.SetCookieResult).ConfigureAwait(false);
     }
 
-    protected override void Initialize(JsonSerializerOptions options)
+    protected override void Initialize(JsonSerializerOptions jsonSerializerOptions)
     {
-        _jsonContext = new StorageJsonSerializerContext(options);
+        var storageOptions = new JsonSerializerOptions(jsonSerializerOptions)
+        {
+            Converters =
+            {
+                new BrowsingContextConverter(BiDi),
+                new BrowserUserContextConverter(BiDi),
+            }
+        };
+
+        _jsonContext = new StorageJsonSerializerContext(storageOptions);
     }
 }
 
@@ -60,4 +70,5 @@ public sealed class StorageModule : Module
 [JsonSerializable(typeof(SetCookieResult))]
 [JsonSerializable(typeof(DeleteCookiesCommand))]
 [JsonSerializable(typeof(DeleteCookiesResult))]
+
 internal partial class StorageJsonSerializerContext : JsonSerializerContext;

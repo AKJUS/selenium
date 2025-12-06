@@ -18,29 +18,32 @@
 // </copyright>
 
 using System;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace OpenQA.Selenium.BiDi.Script;
 
-public sealed class PreloadScript : IAsyncDisposable
+public sealed record PreloadScript
 {
-    private readonly BiDi _bidi;
-
     public PreloadScript(BiDi bidi, string id)
+        : this(id)
     {
-        _bidi = bidi;
+        BiDi = bidi ?? throw new ArgumentNullException(nameof(bidi));
+    }
+
+    [JsonConstructor]
+    internal PreloadScript(string id)
+    {
         Id = id;
     }
 
-    public string Id { get; }
+    internal string Id { get; }
 
-    public Task RemoveAsync()
-    {
-        return _bidi.Script.RemovePreloadScriptAsync(this);
-    }
+    private BiDi? _bidi;
 
-    public async ValueTask DisposeAsync()
+    [JsonIgnore]
+    public BiDi BiDi
     {
-        await RemoveAsync().ConfigureAwait(false);
+        get => _bidi ?? throw new InvalidOperationException($"{nameof(BiDi)} instance has not been hydrated.");
+        internal set => _bidi = value;
     }
 }

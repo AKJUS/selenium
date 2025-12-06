@@ -17,17 +17,33 @@
 // under the License.
 // </copyright>
 
+using System;
+using System.Text.Json.Serialization;
+
 namespace OpenQA.Selenium.BiDi.Script;
 
-public sealed class InternalId
+public sealed record InternalId
 {
-    readonly BiDi _bidi;
-
     public InternalId(BiDi bidi, string id)
+        : this(id)
     {
-        _bidi = bidi;
+        BiDi = bidi ?? throw new ArgumentNullException(nameof(bidi));
+    }
+
+    [JsonConstructor]
+    internal InternalId(string id)
+    {
         Id = id;
     }
 
-    public string Id { get; }
+    internal string Id { get; }
+
+    private BiDi? _bidi;
+
+    [JsonIgnore]
+    public BiDi BiDi
+    {
+        get => _bidi ?? throw new InvalidOperationException($"{nameof(BiDi)} instance has not been hydrated.");
+        internal set => _bidi = value;
+    }
 }

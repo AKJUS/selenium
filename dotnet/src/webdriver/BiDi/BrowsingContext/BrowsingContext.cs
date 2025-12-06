@@ -26,9 +26,15 @@ namespace OpenQA.Selenium.BiDi.BrowsingContext;
 
 public sealed class BrowsingContext
 {
-    internal BrowsingContext(BiDi bidi, string id)
+    public BrowsingContext(BiDi bidi, string id)
+        : this(id)
     {
-        BiDi = bidi;
+        BiDi = bidi ?? throw new ArgumentNullException(nameof(bidi));
+    }
+
+    [JsonConstructor]
+    internal BrowsingContext(string id)
+    {
         Id = id;
     }
 
@@ -40,8 +46,14 @@ public sealed class BrowsingContext
 
     internal string Id { get; }
 
+    private BiDi? _bidi;
+
     [JsonIgnore]
-    public BiDi BiDi { get; }
+    public BiDi BiDi
+    {
+        get => _bidi ?? throw new InvalidOperationException($"{nameof(BiDi)} instance has not been hydrated.");
+        internal set => _bidi = value;
+    }
 
     [JsonIgnore]
     public BrowsingContextLogModule Log => _logModule ?? Interlocked.CompareExchange(ref _logModule, new BrowsingContextLogModule(this, BiDi.Log), null) ?? _logModule;
