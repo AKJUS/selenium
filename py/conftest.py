@@ -312,7 +312,7 @@ class Driver:
             driver_to_stop.quit()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def driver(request):
     global selenium_driver
     driver_class = getattr(request, "param", "Chrome").lower()
@@ -368,7 +368,7 @@ def driver(request):
                 except Exception:
                     pass
 
-            request.addfinalizer(ensure_valid_window)
+            request.addfinalizer(ensure_valid_window)  # noqa: PT021
 
     yield selenium_driver.driver
 
@@ -391,7 +391,7 @@ def stop_driver(request):
             selenium_driver.stop_driver()
         selenium_driver = None
 
-    request.addfinalizer(fin)
+    request.addfinalizer(fin)  # noqa: PT021
 
 
 def pytest_exception_interact(node, call, report):
@@ -460,12 +460,12 @@ def edge_service():
     return EdgeService
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def driver_executable(request):
     return request.config.option.executable
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def clean_driver(request):
     _supported_drivers = SupportedDrivers()
     try:
@@ -492,17 +492,17 @@ def clean_driver(request):
         driver_reference = None
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def clean_service(request):
     driver_class = request.config.option.drivers[0].lower()
     selenium_driver = Driver(driver_class, request)
-    yield selenium_driver.service
+    return selenium_driver.service
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def clean_options(request):
     driver_class = request.config.option.drivers[0].lower()
-    yield Driver.clean_options(driver_class, request)
+    return Driver.clean_options(driver_class, request)
 
 
 @pytest.fixture
