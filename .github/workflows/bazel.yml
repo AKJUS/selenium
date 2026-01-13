@@ -163,7 +163,7 @@ jobs:
           repository-cache: true
       - name: Setup Bazel without caching
         if: inputs.caching == false
-        uses: bazel-contrib/setup-bazel@0.15.0
+        uses: bazel-contrib/setup-bazel@0.18.0
         with:
           bazelrc: common --color=yes
       - name: Setup curl for Ubuntu
