@@ -4,6 +4,7 @@ require 'English'
 $LOAD_PATH.unshift File.expand_path('.')
 
 require 'base64'
+require 'json'
 require 'rake'
 require 'net/http'
 require 'net/telnet'
@@ -807,14 +808,81 @@ namespace :rb do
     File.open(file, 'w') { |f| f.puts text }
     @git.add(file)
 
-    sh 'cd rb && bundle --version && bundle update'
-    @git.add('rb/Gemfile.lock')
+    Rake::Task['rb:update'].invoke
   end
 
   desc 'Update Ruby Syntax'
   task :lint do |_task, arguments|
     args = arguments.to_a.compact
     Bazel.execute('run', args, '//rb:lint')
+  end
+
+  desc 'Sync gem checksums from Gemfile.lock to MODULE.bazel (use force to re-download all)'
+  task :pin, [:force] do |_task, arguments|
+    require 'digest'
+
+    gemfile_lock = 'rb/Gemfile.lock'
+    module_bazel = 'MODULE.bazel'
+    force = arguments[:force] == 'force'
+
+    lock_content = File.read(gemfile_lock)
+    gem_section = lock_content[/GEM\n\s+remote:.*?\n\s+specs:\n(.*?)(?=\n[A-Z]|\Z)/m, 1]
+    gems = gem_section.scan(/^    ([a-zA-Z0-9_-]+) \(([^)]+)\)$/)
+    needed_gems = gems.map { |name, version| "#{name}-#{version}" }
+
+    # Parse existing checksums from MODULE.bazel
+    module_content = File.read(module_bazel)
+    existing = module_content.scan(/"([^"]+)":\s*"([a-f0-9]{64})"/).to_h
+
+    # Keep existing checksums for gems still in Gemfile.lock (unless force)
+    checksums = force ? {} : existing.slice(*needed_gems)
+    to_download = needed_gems - checksums.keys
+
+    puts "Found #{gems.size} gems: #{checksums.size} cached, #{to_download.size} to download..."
+
+    failed = []
+    if to_download.any?
+      to_download.each do |key|
+        uri = URI("https://rubygems.org/gems/#{key}.gem")
+
+        5.times do
+          response = Net::HTTP.get_response(uri)
+          break unless response.is_a?(Net::HTTPRedirection)
+
+          uri = URI(response['location'])
+        end
+
+        unless response.is_a?(Net::HTTPSuccess)
+          puts "  #{key}: failed (HTTP #{response.code})"
+          failed << key
+          next
+        end
+
+        sha = Digest::SHA256.hexdigest(response.body)
+        checksums[key] = sha
+        puts "  #{key}: #{sha[0, 16]}..."
+      rescue StandardError => e
+        puts "  #{key}: failed (#{e.message})"
+        failed << key
+      end
+    end
+
+    raise "Failed to download checksums for: #{failed.join(', ')}" if failed.any?
+
+    checksums_lines = checksums.keys.sort.map { |k| "        \"#{k}\": \"#{checksums[k]}\"," }
+    formatted = "    gem_checksums = {\n#{checksums_lines.join("\n")}\n    },"
+
+    new_content = module_content.sub(/    gem_checksums = \{[^}]+\},/m, formatted)
+    File.write(module_bazel, new_content)
+
+    @git.add(module_bazel)
+  end
+
+  desc 'Update Ruby dependencies and sync checksums to MODULE.bazel'
+  task :update do
+    Bazel.execute('run', [], '//rb:bundle-update')
+    @git.add('rb/Gemfile.lock')
+    Rake::Task['rb:pin'].invoke
   end
 end
 
