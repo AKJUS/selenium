@@ -386,12 +386,12 @@ end
 task 'release-java': %i[java-release-zip publish-maven]
 
 def read_m2_user_pass
-  puts 'Maven environment variables not set, inspecting /.m2/settings.xml.'
+  puts 'Maven environment variables not set, inspecting ~/.m2/settings.xml.'
   settings = File.read("#{Dir.home}/.m2/settings.xml")
   found_section = false
   settings.each_line do |line|
     if !found_section
-      found_section = line.include? '<id>sonatype-nexus-staging</id>'
+      found_section = line.include? '<id>central</id>'
     elsif line.include?('<username>')
       ENV['MAVEN_USER'] = line[%r{<username>(.*?)</username>}, 1]
     elsif line.include?('<password>')
@@ -507,7 +507,6 @@ namespace :node do
     Bazel.execute('run', ['--config=release'], '//javascript/selenium-webdriver:selenium-webdriver.publish')
   end
 
-  desc 'Release Node npm package'
   task deploy: :release
 
   desc 'Generate Node documentation'
@@ -759,9 +758,7 @@ namespace :rb do
 
   desc 'Push Ruby gems to rubygems'
   task :release do |_task, arguments|
-    nightly = arguments.to_a.include?('nightly')
-
-    if nightly
+    if arguments.to_a.include?('nightly')
       puts 'Bumping Ruby nightly version...'
       Bazel.execute('run', [], '//rb:selenium-webdriver-bump-nightly-version')
 
@@ -1199,7 +1196,8 @@ namespace :all do
     sh "./scripts/format.#{ext}", verbose: true
   end
 
-  # Example: `./go all:prepare 4.31.0 early-stable`
+  # Example: `./go all:prepare[4.31.0,early-stable]`
+  # Equivalent to .github/workflows/pre-release.yml in a single command
   desc 'Update everything in preparation for a release'
   task :prepare, [:version, :channel] do |_task, arguments|
     version = arguments[:version]
@@ -1210,7 +1208,7 @@ namespace :all do
     Rake::Task['java:update'].invoke
     Rake::Task['authors'].invoke
     Rake::Task['all:version'].invoke(version)
-    Rake::Task['all:changelogs']
+    Rake::Task['all:changelogs'].invoke
   end
 
   desc 'Update all versions'
