@@ -1141,7 +1141,7 @@ namespace :rust do
 
   desc 'Update the rust lock files'
   task :update do
-    sh 'CARGO_BAZEL_REPIN=true bazel sync --only=crates'
+    sh 'CARGO_BAZEL_REPIN=true bazel build @rules_rust//:rustfmt'
   end
 
   desc 'Update Rust changelog'

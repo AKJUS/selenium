@@ -23,7 +23,7 @@ jobs:
         run: RULES_JVM_EXTERNAL_REPIN=1 bazel run @maven//:pin
       - name: rust - repin dependencies
         if: contains(join(github.event.commits.*.message), '[rust]')
-        run: CARGO_BAZEL_REPIN=true bazel sync --only=crates
+        run: CARGO_BAZEL_REPIN=true bazel build @rules_rust//:rustfmt
       - name: js - repin dependencies
         if: contains(join(github.event.commits.*.message), '[js]')
         run: bazel run -- @pnpm//:pnpm install --dir $PWD --lockfile-only
