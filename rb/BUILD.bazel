@@ -177,31 +177,45 @@ rb_binary(
     ],
 )
 
+_LINT_ARGS = [
+    "--config=rb/.rubocop.yml",
+    "rb/",
+    "Rakefile",
+]
+
+_LINT_DATA = [
+    ".rubocop.yml",
+    "//:rakefile",
+]
+
+_LINT_DEPS = [
+    ":selenium-devtools",
+    ":selenium-webdriver",
+    "//rb/lib/selenium/devtools:cdp-generate",
+    "//rb/lib/selenium/support:nightly_version_generator",
+    "//rb/spec",
+    "@bundle",
+]
+
 rb_test(
     name = "lint",
-    args = [
-        "--autocorrect",
-        "--config=rb/.rubocop.yml",
-        "rb/",
-        "Rakefile",
-    ],
-    data = [
-        ".rubocop.yml",
-        "//:rakefile",
-    ],
+    args = ["--autocorrect"] + _LINT_ARGS,
+    data = _LINT_DATA,
     main = "@bundle//bin:rubocop",
     tags = [
         "no-sandbox",
         "skip-rbe",
     ],
-    deps = [
-        ":selenium-devtools",
-        ":selenium-webdriver",
-        "//rb/lib/selenium/devtools:cdp-generate",
-        "//rb/lib/selenium/support:nightly_version_generator",
-        "//rb/spec",
-        "@bundle",
-    ],
+    deps = _LINT_DEPS,
+)
+
+rb_binary(
+    name = "lint-unsafe",
+    testonly = True,
+    args = ["--autocorrect-all"] + _LINT_ARGS,
+    data = _LINT_DATA,
+    main = "@bundle//bin:rubocop",
+    deps = _LINT_DEPS,
 )
 
 rb_binary(
