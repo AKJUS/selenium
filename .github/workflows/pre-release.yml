@@ -28,6 +28,17 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
+      - name: Setup Bazel
+        uses: bazel-contrib/setup-bazel@0.18.0
+        with:
+          cache-save: false
+          bazelisk-cache: true
+          external-cache: |
+            manifest:
+              crates: rust/Cargo.Bazel.lock
+              rules_ruby++ruby+ruby: rb/.ruby-version
+          repository-cache: true
+          bazelrc: common --color=yes
       - name: "Prep git"
         run: |
           git config --local user.email "selenium-ci@users.noreply.github.com"
@@ -89,6 +100,17 @@ jobs:
           working-directory: 'rb'
       - name: Setup curl for Ubuntu
         run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
+      - name: Setup Bazel
+        uses: bazel-contrib/setup-bazel@0.18.0
+        with:
+          cache-save: false
+          bazelisk-cache: true
+          external-cache: |
+            manifest:
+              crates: rust/Cargo.Bazel.lock
+              rules_ruby++ruby+ruby: rb/.ruby-version
+          repository-cache: true
+          bazelrc: common --color=yes
       - name: "Prep git"
         run: |
           git config --local user.email "selenium-ci@users.noreply.github.com"

@@ -18,6 +18,17 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+      - name: Setup Bazel
+        uses: bazel-contrib/setup-bazel@0.18.0
+        with:
+          cache-save: false
+          bazelisk-cache: true
+          external-cache: |
+            manifest:
+              crates: rust/Cargo.Bazel.lock
+              rules_ruby++ruby+ruby: rb/.ruby-version
+          repository-cache: true
+          bazelrc: common --color=yes
       - name: java - repin dependencies
         if: contains(join(github.event.commits.*.message), '[java]')
         run: RULES_JVM_EXTERNAL_REPIN=1 bazel run @maven//:pin

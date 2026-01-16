@@ -67,7 +67,13 @@ jobs:
       - name: Setup Bazel
         uses: bazel-contrib/setup-bazel@0.18.0
         with:
+          cache-save: false
           bazelisk-cache: true
+          external-cache: |
+            manifest:
+              crates: rust/Cargo.Bazel.lock
+              rules_ruby++ruby+ruby: rb/.ruby-version
+          repository-cache: true
           bazelrc: common --color=yes
       - name: Install npm dependencies
         if: ${{ inputs.language == 'node' || inputs.language == 'all' }}

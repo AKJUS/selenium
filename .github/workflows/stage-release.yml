@@ -55,6 +55,17 @@ jobs:
           distribution: 'temurin'
       - name: Setup curl for Ubuntu
         run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
+      - name: Setup Bazel
+        uses: bazel-contrib/setup-bazel@0.18.0
+        with:
+          cache-save: false
+          bazelisk-cache: true
+          external-cache: |
+            manifest:
+              crates: rust/Cargo.Bazel.lock
+              rules_ruby++ruby+ruby: rb/.ruby-version
+          repository-cache: true
+          bazelrc: common --color=yes
       - name: Delete nightly tag
         run: |
           if git rev-parse --verify refs/tags/nightly >/dev/null 2>&1; then
