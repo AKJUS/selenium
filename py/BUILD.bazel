@@ -215,7 +215,10 @@ py_library(
     name = "selenium",
     srcs = glob(
         ["selenium/**/*.py"],
-        exclude = ["generate.py"],
+        exclude = [
+            "generate.py",
+            "selenium/webdriver/common/devtools/v*/**",
+        ],
     ),
     data = [
         "selenium/py.typed",
