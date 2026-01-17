@@ -37,7 +37,7 @@ jobs:
         run: CARGO_BAZEL_REPIN=true bazel build @rules_rust//:rustfmt
       - name: js - repin dependencies
         if: contains(join(github.event.commits.*.message), '[js]')
-        run: bazel run -- @pnpm//:pnpm install --dir $PWD --lockfile-only
+        run: bazel run -- @pnpm//:pnpm install --dir "$PWD" --lockfile-only
       - name: dotnet - repin dependencies
         if: contains(join(github.event.commits.*.message), '[dotnet]')
         run: ./dotnet/update-deps.sh
@@ -49,7 +49,8 @@ jobs:
         run: ./go rb:pin
       - name: Commit files
         run: |
-          export CHANGES=$(git status -s)
+          CHANGES=$(git status -s)
+          export CHANGES
           if [ -n "$CHANGES" ]; then
             git config --local user.email "selenium-ci@users.noreply.github.com"
             git config --local user.name "Selenium CI Bot"

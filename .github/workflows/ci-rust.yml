@@ -256,8 +256,8 @@ jobs:
           git add latest.json
           git commit -m "Update hash values for latest binaries"
           short_hash=$(git rev-parse --short HEAD)
-          echo "TAG_NAME=selenium-manager-$short_hash" >> $GITHUB_ENV
-          git tag ${{ env.TAG_NAME }}
+          echo "TAG_NAME=selenium-manager-$short_hash" >> "$GITHUB_ENV"
+          git tag "selenium-manager-$short_hash"
           git push && git push --tags
       - name: "Release"
         uses: softprops/action-gh-release@v2
