@@ -1134,7 +1134,9 @@ namespace :rust do
 
   desc 'Update the rust lock files'
   task :update do
-    sh 'CARGO_BAZEL_REPIN=true bazel build @rules_rust//:rustfmt'
+    puts 'pinning cargo versions'
+    ENV['CARGO_BAZEL_REPIN'] = 'true'
+    Bazel.execute('fetch', [], '@crates//:all')
   end
 
   desc 'Update Rust changelog'
