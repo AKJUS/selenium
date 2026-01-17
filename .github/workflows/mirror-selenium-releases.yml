@@ -48,7 +48,7 @@ jobs:
           git config --local user.name "Selenium CI Bot"
           git add common/mirror/selenium
           git commit -m "Update mirror info (`date`)" -a
-          echo "::set-output name=commit::true"
+          echo "commit=true" >> $GITHUB_OUTPUT
         fi
     - name: Push changes
       if: steps.git.outputs.commit == 'true'
