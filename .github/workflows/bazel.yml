@@ -88,10 +88,14 @@ jobs:
         uses: actions/checkout@v4
       - name: Pull latest changes from head ref for PRs
         if: contains(github.head_ref, 'renovate/')
-        run: git pull origin ${{ github.head_ref }}
+        run: git pull origin "$HEAD_REF"
+        env:
+          HEAD_REF: ${{ github.head_ref }}
       - name: Pull latest changes from ref for branch pushes
         if: contains(github.ref, 'renovate/')
-        run: git pull origin ${{ github.ref }}
+        run: git pull origin "$GIT_REF"
+        env:
+          GIT_REF: ${{ github.ref }}
       - name: Free space
         if: inputs.os != 'windows'
         run: ./scripts/github-actions/free-disk-space.sh
