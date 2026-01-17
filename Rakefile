@@ -535,6 +535,7 @@ namespace :node do
     old_version = node_version
     nightly = "-nightly#{Time.now.strftime('%Y%m%d%H%M')}"
     new_version = updated_version(old_version, arguments[:version], nightly)
+    puts "Updating Node from #{old_version} to #{new_version}"
 
     %w[javascript/selenium-webdriver/package.json javascript/selenium-webdriver/BUILD.bazel].each do |file|
       text = File.read(file).gsub(old_version, new_version)
@@ -647,6 +648,7 @@ namespace :py do
     old_version = python_version
     nightly = ".#{Time.now.strftime('%Y%m%d%H%M')}"
     new_version = updated_version(old_version, arguments[:version], nightly)
+    puts "Updating Python from #{old_version} to #{new_version}"
 
     ['py/pyproject.toml',
      'py/BUILD.bazel',
@@ -795,6 +797,7 @@ namespace :rb do
   task :version, [:version] do |_task, arguments|
     old_version = ruby_version
     new_version = updated_version(old_version, arguments[:version], '.nightly')
+    puts "Updating Ruby from #{old_version} to #{new_version}"
 
     file = 'rb/lib/selenium/webdriver/version.rb'
     text = File.read(file).gsub(old_version, new_version)
@@ -871,6 +874,7 @@ namespace :rb do
 
   desc 'Update Ruby dependencies and sync checksums to MODULE.bazel'
   task :update do
+    puts 'updating and pinning gem versions'
     Bazel.execute('run', [], '//rb:bundle-update')
     @git.add('rb/Gemfile.lock')
     Bazel.execute('run', [], '//rb:rbs-update')
@@ -959,6 +963,7 @@ namespace :dotnet do
     old_version = dotnet_version
     nightly = "-nightly#{Time.now.strftime('%Y%m%d%H%M')}"
     new_version = updated_version(old_version, arguments[:version], nightly)
+    puts "Updating .NET from #{old_version} to #{new_version}"
 
     file = 'dotnet/selenium-dotnet-version.bzl'
     text = File.read(file).gsub(old_version, new_version)
@@ -1074,6 +1079,7 @@ namespace :java do
 
   desc 'Update Maven dependencies'
   task :update do
+    puts 'Updating Maven dependencies'
     # Make sure things are in a good state to start with
     args = ['--action_env=RULES_JVM_EXTERNAL_REPIN=1']
     Bazel.execute('run', args, '@maven//:pin')
@@ -1112,6 +1118,7 @@ namespace :java do
   task :version, [:version] do |_task, arguments|
     old_version = java_version
     new_version = updated_version(old_version, arguments[:version], '-SNAPSHOT')
+    puts "Updating Java from #{old_version} to #{new_version}"
 
     file = 'java/version.bzl'
     text = File.read(file).gsub(old_version, new_version)
@@ -1158,6 +1165,7 @@ namespace :rust do
                          end
     updated = updated_version(equivalent_version, arguments[:version], '-nightly')
     new_version = updated.split(/\.|-/).tap { |v| v.delete_at(2) }.unshift('0').join('.').gsub('.nightly', '-nightly')
+    puts "Updating Rust from #{old_version} to #{new_version}"
 
     ['rust/Cargo.toml', 'rust/BUILD.bazel'].each do |file|
       text = File.read(file).gsub(old_version, new_version)
@@ -1243,7 +1251,10 @@ namespace :all do
     sh "./scripts/format.#{ext}", verbose: true
 
     after_diff = `git diff`
-    raise 'Formatting updated files; please review, stage, and commit the changes.' if before_diff != after_diff
+    if before_diff != after_diff
+      changed_files = `git diff --name-only`.strip
+      raise "Formatting updated files:\n#{changed_files}\nPlease review, stage, and commit the changes."
+    end
 
     Bazel.execute('run', [], '//rb:steep')
     shellcheck = Bazel.execute('build', [], '@multitool//tools/shellcheck')
@@ -1268,6 +1279,7 @@ namespace :all do
   desc 'Update all versions'
   task :version, [:version] do |_task, arguments|
     version = arguments[:version] || 'nightly'
+    puts "Updating all versions to #{version}"
 
     Rake::Task['java:version'].invoke(version)
     Rake::Task['rb:version'].invoke(version)
@@ -1289,6 +1301,7 @@ namespace :all do
 
   desc 'Update all changelogs'
   task :changelogs do |_task, _arguments|
+    puts 'Updating all changelogs'
     Rake::Task['java:changelog'].invoke
     Rake::Task['rb:changelog'].invoke
     Rake::Task['node:changelog'].invoke
