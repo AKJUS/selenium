@@ -118,7 +118,7 @@ jobs:
           dotnet-version: ${{ inputs.dotnet-version }}
       - name: Setup Java
         if: inputs.java-version != ''
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: ${{ inputs.java-version }}
           distribution: 'temurin'
@@ -224,7 +224,7 @@ jobs:
           limit-access-to-actor: false
       - name: Release Nightly
         if: inputs.nightly-release-files != ''
-        uses: marvinpinto/action-automatic-releases@latest
+        uses: marvinpinto/action-automatic-releases@v1.2.1
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "nightly"
