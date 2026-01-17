@@ -1,5 +1,49 @@
 {
   "$schema": "https://raw.githubusercontent.com/theoremlp/rules_multitool/main/lockfile.schema.json",
+  "actionlint": {
+    "binaries": [
+      {
+        "kind": "archive",
+        "url": "https://github.com/rhysd/actionlint/releases/download/v1.7.10/actionlint_1.7.10_linux_arm64.tar.gz",
+        "file": "actionlint",
+        "sha256": "cd3dfe5f66887ec6b987752d8d9614e59fd22f39415c5ad9f28374623f41773a",
+        "os": "linux",
+        "cpu": "arm64"
+      },
+      {
+        "kind": "archive",
+        "url": "https://github.com/rhysd/actionlint/releases/download/v1.7.10/actionlint_1.7.10_linux_amd64.tar.gz",
+        "file": "actionlint",
+        "sha256": "f4c76b71db5755a713e6055cbb0857ed07e103e028bda117817660ebadb4386f",
+        "os": "linux",
+        "cpu": "x86_64"
+      },
+      {
+        "kind": "archive",
+        "url": "https://github.com/rhysd/actionlint/releases/download/v1.7.10/actionlint_1.7.10_darwin_arm64.tar.gz",
+        "file": "actionlint",
+        "sha256": "004ca87b367b37f4d75c55ab6cf80f9b8c043adbfbd440f31c604d417939c442",
+        "os": "macos",
+        "cpu": "arm64"
+      },
+      {
+        "kind": "archive",
+        "url": "https://github.com/rhysd/actionlint/releases/download/v1.7.10/actionlint_1.7.10_darwin_amd64.tar.gz",
+        "file": "actionlint",
+        "sha256": "16782c41f2af264db80f855ee5d09164ca98fc78edf3bcd0f46eecff279682ba",
+        "os": "macos",
+        "cpu": "x86_64"
+      },
+      {
+        "kind": "archive",
+        "url": "https://github.com/rhysd/actionlint/releases/download/v1.7.10/actionlint_1.7.10_windows_amd64.zip",
+        "file": "actionlint.exe",
+        "sha256": "283467f9d6202a8cb8c00ad8dd0ee4e685b71fb86a6a56c68fcbb9ae8ed91237",
+        "os": "windows",
+        "cpu": "x86_64"
+      }
+    ]
+  },
   "ruff": {
     "binaries": [
       {

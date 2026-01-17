@@ -1242,8 +1242,15 @@ namespace :all do
   end
 
   task :lint do
+    before_diff = `git diff`
+
     ext = /mswin|msys|mingw|cygwin|bccwin|wince|emc/.match?(RbConfig::CONFIG['host_os']) ? 'ps1' : 'sh'
     sh "./scripts/format.#{ext}", verbose: true
+
+    after_diff = `git diff`
+    raise 'Formatting updated files; please review, stage, and commit the changes.' if before_diff != after_diff
+
+    Bazel.execute('run', [], '@multitool//tools/actionlint:cwd')
   end
 
   # Example: `./go all:prepare[4.31.0,early-stable]`

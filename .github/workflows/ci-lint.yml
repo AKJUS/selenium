@@ -14,6 +14,15 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  actionlint:
+    name: Validate workflows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Validate workflows
+        uses: rhysd/actionlint-action@v1
+
   format:
     name: Format
     if: startsWith(github.head_ref, 'renovate/') != true
