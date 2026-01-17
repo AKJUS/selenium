@@ -1250,7 +1250,8 @@ namespace :all do
     after_diff = `git diff`
     raise 'Formatting updated files; please review, stage, and commit the changes.' if before_diff != after_diff
 
-    Bazel.execute('run', [], '@multitool//tools/actionlint:cwd')
+    shellcheck = Bazel.execute('build', [], '@multitool//tools/shellcheck')
+    Bazel.execute('run', ['--', '-shellcheck', shellcheck], '@multitool//tools/actionlint:cwd')
   end
 
   # Example: `./go all:prepare[4.31.0,early-stable]`
