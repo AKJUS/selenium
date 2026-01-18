@@ -1,4 +1,4 @@
-// <copyright file="IRemoteReference.cs" company="Selenium Committers">
+// <copyright file="FileDialogInfo.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,25 +17,7 @@
 // under the License.
 // </copyright>
 
-namespace OpenQA.Selenium.BiDi.Script;
+namespace OpenQA.Selenium.BiDi.Input;
 
-public interface IRemoteReference;
-
-public interface ISharedReference : IRemoteReference
-{
-    public string SharedId { get; }
-
-    public Handle? Handle { get; set; }
-}
-
-public sealed record SharedReference(string SharedId) : ISharedReference
-{
-    public Handle? Handle { get; set; }
-}
-
-public interface IRemoteObjectReference : IRemoteReference
-{
-    public Handle Handle { get; }
-
-    public string? SharedId { get; set; }
-}
+public sealed record FileDialogInfo(BrowsingContext.BrowsingContext Context, bool Multiple, Script.SharedReference? Element)
+    : EventArgs;
