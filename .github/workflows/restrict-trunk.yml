@@ -25,10 +25,21 @@ on:
         type: boolean
 
 jobs:
+  approve:
+    name: Approve Manual Trigger
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.repository.fork == false
+    environment: production
+    steps:
+      - run: echo "Manual trigger approved"
+
   manage-trunk:
     name: Manage Trunk Branch
+    needs: [approve]
     runs-on: ubuntu-latest
     if: |
+      always() &&
+      (needs.approve.result == 'success' || needs.approve.result == 'skipped') &&
       github.event.repository.fork == false &&
       (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call' ||
        (startsWith(github.event.pull_request.head.ref, 'release-preparation-') &&
