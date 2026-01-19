@@ -569,6 +569,21 @@ namespace :node do
     Bazel.execute('build', args, '//javascript/selenium-webdriver')
   end
 
+  desc 'Pin JavaScript dependencies via pnpm lockfile'
+  task :pin do
+    Bazel.execute('run', ['--', 'install', '--dir', Dir.pwd, '--lockfile-only'], '@pnpm//:pnpm')
+    @git.add('pnpm-lock.yaml')
+  end
+
+  desc 'Update JavaScript dependencies and refresh lockfile (use "latest" to bump ranges)'
+  task :update, [:latest] do |_task, arguments|
+    args = ['--', 'update', '-r']
+    args << '--latest' if arguments[:latest] == 'latest'
+    args += ['--dir', Dir.pwd]
+    Bazel.execute('run', args, '@pnpm//:pnpm')
+    Rake::Task['node:pin'].invoke
+  end
+
   task :'dry-run' do
     Bazel.execute('run', ['--stamp'],
                   '//javascript/selenium-webdriver:selenium-webdriver.publish  -- --dry-run=true')
