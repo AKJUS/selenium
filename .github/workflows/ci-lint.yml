@@ -90,7 +90,7 @@ jobs:
   commit-fixes:
     name: Commit fixes
     needs: format
-    if: ${{ always() && needs.format.outputs.patch_uploaded == 'success' }}
+    if: ${{ failure() && needs.format.outputs.patch_uploaded == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
