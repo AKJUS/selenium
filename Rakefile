@@ -1111,8 +1111,7 @@ namespace :java do
   task :update do
     puts 'Updating Maven dependencies'
     # Make sure things are in a good state to start with
-    args = ['--action_env=RULES_JVM_EXTERNAL_REPIN=1']
-    Bazel.execute('run', args, '@maven//:pin')
+    Rake::Task['java:pin'].invoke
 
     file_path = 'MODULE.bazel'
     content = File.read(file_path)
@@ -1132,9 +1131,13 @@ namespace :java do
     end
     File.write(file_path, content)
 
+    Rake::Task['java:pin'].invoke
+  end
+
+  desc 'Pin Maven dependencies'
+  task :pin do
     args = ['--action_env=RULES_JVM_EXTERNAL_REPIN=1']
     Bazel.execute('run', args, '@maven//:pin')
-
     %w[MODULE.bazel java/maven_install.json].each { |file| @git.add(file) }
   end
 
@@ -1176,6 +1179,9 @@ namespace :rust do
     Bazel.execute('fetch', [], '@crates//:all')
   end
 
+  desc 'Pin Rust dependencies'
+  task pin: :update
+
   desc 'Update Rust changelog'
   task :changelog do
     header = "#{rust_version}\n======"
@@ -1210,6 +1216,14 @@ namespace :rust do
 end
 
 namespace :all do
+  desc 'Pin dependencies for all languages'
+  task :pin do
+    Rake::Task['java:pin'].invoke
+    Rake::Task['rb:pin'].invoke
+    Rake::Task['rust:pin'].invoke
+    Rake::Task['node:pin'].invoke
+  end
+
   desc 'Update Chrome DevTools support'
   task :update_cdp, [:channel] do |_task, arguments|
     chrome_channel = arguments[:channel] || 'stable'
