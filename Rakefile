@@ -396,6 +396,26 @@ RELEASE_CREDENTIALS = {
   dotnet_nightly: {env: [%w[GITHUB_TOKEN]]}
 }.freeze
 
+def verify_package_published(url)
+  puts "Verifying #{url}..."
+  uri = URI(url)
+  res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == 'https') { |http| http.request(Net::HTTP::Get.new(uri)) }
+  raise "Package not published: #{url}" unless res.is_a?(Net::HTTPSuccess)
+
+  puts 'Verified!'
+end
+
+def sonatype_api_post(url, token)
+  uri = URI(url)
+  req = Net::HTTP::Post.new(uri)
+  req['Authorization'] = "Basic #{token}"
+
+  res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+  raise "Sonatype API error (#{res.code}): #{res.body}" unless res.is_a?(Net::HTTPSuccess)
+
+  res.body.to_s.empty? ? {} : JSON.parse(res.body)
+end
+
 def credential_valid?(cred)
   has_env = cred[:env]&.all? { |vars| vars.any? { |v| ENV.fetch(v, nil) } }
   has_file = cred[:file]&.call
@@ -603,6 +623,11 @@ namespace :node do
     Bazel.execute('run', ['--config=release'], '//javascript/selenium-webdriver:selenium-webdriver.publish')
   end
 
+  desc 'Verify Node package is published on npm'
+  task :verify do
+    verify_package_published("https://registry.npmjs.org/selenium-webdriver/#{node_version}")
+  end
+
   task deploy: :release
 
   desc 'Generate Node documentation'
@@ -666,6 +691,11 @@ namespace :py do
     command = nightly ? '//py:selenium-release-nightly' : '//py:selenium-release'
     puts "Running Python release command: #{command}"
     Bazel.execute('run', ['--config=release'], command)
+  end
+
+  desc 'Verify Python package is published on PyPI'
+  task :verify do
+    verify_package_published("https://pypi.org/pypi/selenium/#{python_version}/json")
   end
 
   desc 'generate and copy files required for local development'
@@ -870,6 +900,16 @@ namespace :rb do
     end
   end
 
+  desc 'Verify Ruby packages are published on RubyGems'
+  task :verify do
+    patch_release = ruby_version.split('.').fetch(2, '0').to_i.positive?
+
+    verify_package_published("https://rubygems.org/api/v2/rubygems/selenium-webdriver/versions/#{ruby_version}.json")
+    unless patch_release
+      verify_package_published("https://rubygems.org/api/v2/rubygems/selenium-devtools/versions/#{ruby_version}.json")
+    end
+  end
+
   desc 'Generate Ruby documentation'
   task :docs do |_task, arguments|
     if ruby_version.include?('nightly') && !arguments.to_a.include?('force')
@@ -1027,6 +1067,12 @@ namespace :dotnet do
     Bazel.execute('run', ['--config=release'], '//dotnet:publish')
   end
 
+  desc 'Verify .NET packages are published on NuGet'
+  task :verify do
+    verify_package_published("https://api.nuget.org/v3/registration5-semver1/selenium.webdriver/#{dotnet_version}.json")
+    verify_package_published("https://api.nuget.org/v3/registration5-semver1/selenium.support/#{dotnet_version}.json")
+  end
+
   desc 'Generate .NET documentation'
   task :docs do |_task, arguments|
     if dotnet_version.include?('nightly') && !arguments.to_a.include?('force')
@@ -1123,32 +1169,96 @@ namespace :java do
   end
 
   desc 'Publish to sonatype'
-  task :publish do |_task|
+  task :publish do
     read_m2_user_pass unless ENV['MAVEN_PASSWORD'] && ENV['MAVEN_USER']
     user = ENV.fetch('MAVEN_USER')
     pass = ENV.fetch('MAVEN_PASSWORD')
+    token = Base64.strict_encode64("#{user}:#{pass}")
 
+    puts 'Triggering Sonatype validation...'
     uri = URI('https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/org.seleniumhq')
-    encoded = Base64.strict_encode64("#{user}:#{pass}")
 
-    puts 'Triggering validation POST to Central Portal...'
     req = Net::HTTP::Post.new(uri)
-    req['Authorization'] = "Basic #{encoded}"
+    req['Authorization'] = "Basic #{token}"
     req['Accept'] = '*/*'
     req['Content-Length'] = '0'
 
-    res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true,
-                                                  open_timeout: 10, read_timeout: 60) do |http|
-      http.request(req)
+    begin
+      res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true,
+                                                    open_timeout: 10, read_timeout: 180) do |http|
+        http.request(req)
+      end
+    rescue Net::ReadTimeout, Net::OpenTimeout => e
+      warn <<~MSG
+        Request timed out waiting for deployment ID.
+        The deployment may still have been created on the server.
+        Check https://central.sonatype.com/publishing/deployments for pending deployments,
+        then run: ./go java:publish_deployment <deployment_id>
+      MSG
+      raise e
     end
 
     if res.is_a?(Net::HTTPSuccess)
-      puts "Manual upload triggered successfully (HTTP #{res.code})"
+      deployment_id = res.body.strip
+      puts "Got deployment ID: #{deployment_id}"
+      Rake::Task['java:publish_deployment'].invoke(deployment_id)
     else
-      warn "Manual upload failed (HTTP #{res.code}): #{res.code} #{res.message}"
-      warn res.body if res.body && !res.body.empty?
+      warn "Failed to get deployment ID (HTTP #{res.code}): #{res.body}"
       exit(1)
     end
+  end
+
+  desc 'Publish a Sonatype deployment by ID'
+  task :publish_deployment, [:deployment_id] do |_task, arguments|
+    deployment_id = arguments[:deployment_id] || ENV.fetch('DEPLOYMENT_ID', nil)
+    if deployment_id.nil? || deployment_id.empty?
+      raise 'Deployment ID required: ./go java:publish_deployment[ID] or set DEPLOYMENT_ID'
+    end
+
+    read_m2_user_pass unless ENV['MAVEN_PASSWORD'] && ENV['MAVEN_USER']
+    token = Base64.strict_encode64("#{ENV.fetch('MAVEN_USER')}:#{ENV.fetch('MAVEN_PASSWORD')}")
+
+    encoded_id = URI.encode_www_form_component(deployment_id.strip)
+    status = {}
+    max_attempts = 60
+    delay = 5
+    max_attempts.times do |attempt|
+      status = sonatype_api_post("https://central.sonatype.com/api/v1/publisher/status?id=#{encoded_id}", token)
+      state = status['deploymentState']
+      puts "Deployment state: #{state}"
+
+      case state
+      when 'VALIDATED', 'PUBLISHED' then break
+      when 'FAILED' then raise "Deployment failed: #{status['errors']}"
+      end
+      sleep(delay) unless attempt == max_attempts - 1
+    rescue StandardError => e
+      raise if e.message.start_with?('Deployment failed')
+
+      warn "API error (attempt #{attempt + 1}/#{max_attempts}): #{e.message}"
+      sleep(delay) unless attempt == max_attempts - 1
+    end
+
+    state = status['deploymentState']
+    return if state == 'PUBLISHED'
+
+    raise "Timed out after #{(max_attempts * delay) / 60} minutes waiting for validation" unless state == 'VALIDATED'
+
+    expected = java_release_targets.size
+    actual = status['purls']&.size || 0
+    if actual != expected
+      raise "Expected #{expected} packages but found #{actual}. " \
+            'Drop the deployment at https://central.sonatype.com/publishing/deployments and redeploy.'
+    end
+
+    puts 'Publishing deployed packages...'
+    sonatype_api_post("https://central.sonatype.com/api/v1/publisher/deployment/#{encoded_id}", token)
+    puts "Published! Deployment ID: #{deployment_id}"
+  end
+
+  desc 'Verify Java packages are published on Maven Central'
+  task :verify do
+    verify_package_published("https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-java/#{java_version}/selenium-java-#{java_version}.pom")
   end
 
   desc 'Install jars to local m2 directory'
@@ -1338,8 +1448,26 @@ namespace :all do
   desc 'Validate release credentials for all languages without releasing'
   task :check_credentials do |_task, arguments|
     nightly = arguments.to_a.include?('nightly')
-    langs = nightly ? %i[java dotnet_nightly] : %i[java java_gpg python ruby node dotnet]
-    check_credentials(langs)
+
+    if nightly
+      check_credentials(%i[java dotnet_nightly])
+    else
+      check_credentials(%i[java java_gpg dotnet])
+      setup_pypirc
+      setup_gem_credentials
+      setup_npm_auth
+    end
+  end
+
+  desc 'Verify all packages are published to their registries'
+  task :verify do
+    failures = []
+    %w[java py rb dotnet node].each do |lang|
+      Rake::Task["#{lang}:verify"].invoke
+    rescue StandardError => e
+      failures << "#{lang}: #{e.message}"
+    end
+    raise "Verification failed:\n#{failures.join("\n")}" unless failures.empty?
   end
 
   desc 'Release all artifacts for all language bindings'
