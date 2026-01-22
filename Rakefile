@@ -620,8 +620,6 @@ namespace :node do
     puts 'Generating Node documentation'
     FileUtils.rm_rf('build/docs/api/javascript/')
     Bazel.execute('run', [], '//javascript/selenium-webdriver:docs')
-
-    update_gh_pages unless arguments.to_a.include?('skip_update')
   end
 
   desc 'Update JavaScript changelog'
@@ -730,8 +728,6 @@ namespace :py do
 
     FileUtils.mkdir_p('build/docs/api')
     FileUtils.cp_r('bazel-bin/py/docs/_build/html/.', 'build/docs/api/py')
-
-    update_gh_pages unless arguments.to_a.include?('skip_update')
   end
 
   desc 'Install Python wheel locally'
@@ -902,8 +898,6 @@ namespace :rb do
     Bazel.execute('run', [], '//rb:docs')
     FileUtils.mkdir_p('build/docs/api')
     FileUtils.cp_r('bazel-bin/rb/docs.sh.runfiles/_main/docs/api/rb/.', 'build/docs/api/rb')
-
-    update_gh_pages unless arguments.to_a.include?('skip_update')
   end
 
   desc 'Update Ruby changelog'
@@ -1063,8 +1057,6 @@ namespace :dotnet do
     puts 'Generating .NET documentation'
     FileUtils.rm_rf('build/docs/api/dotnet/')
     Bazel.execute('run', [], '//dotnet:docs')
-
-    update_gh_pages unless arguments.to_a.include?('skip_update')
   end
 
   desc 'Update .NET changelog'
@@ -1253,8 +1245,6 @@ namespace :java do
 
     puts 'Generating Java documentation'
     Rake::Task['javadocs'].invoke
-
-    update_gh_pages unless arguments.to_a.include?('skip_update')
   end
 
   desc 'Update Maven dependencies'
@@ -1399,16 +1389,14 @@ namespace :all do
      'Rakefile'].each { |file| @git.add(file) }
   end
 
-  desc 'Update all API Documentation'
+  desc 'Build all API Documentation'
   task :docs do |_task, arguments|
-    args = arguments.to_a
-    Rake::Task['java:docs'].invoke(*(args + ['skip_update']))
-    Rake::Task['py:docs'].invoke(*(args + ['skip_update']))
-    Rake::Task['rb:docs'].invoke(*(args + ['skip_update']))
-    Rake::Task['dotnet:docs'].invoke(*(args + ['skip_update']))
-    Rake::Task['node:docs'].invoke(*(args + ['skip_update']))
-
-    update_gh_pages
+    args = arguments.to_a.compact
+    Rake::Task['java:docs'].invoke(*args)
+    Rake::Task['py:docs'].invoke(*args)
+    Rake::Task['rb:docs'].invoke(*args)
+    Rake::Task['dotnet:docs'].invoke(*args)
+    Rake::Task['node:docs'].invoke(*args)
   end
 
   desc 'Build all artifacts for all language bindings'
@@ -1552,36 +1540,6 @@ def updated_version(current, desired = nil, nightly = nil)
     # if current version is not nightly, need to bump the version and make nightly
     "#{current.split(/\.|-/).tap { |i| (i[1] = i[1].to_i + 1) && (i[2] = 0) }.join('.')}#{nightly}"
   end
-end
-
-def update_gh_pages(force: true)
-  puts 'Switching to gh-pages branch...'
-  @git.fetch('https://github.com/seleniumhq/selenium.git', {ref: 'gh-pages'})
-
-  unless force
-    puts 'Stash changes that are not docs...'
-    @git.lib.send(:command, 'stash', ['push', '-m', 'stash wip', '--', ':(exclude)build/docs/api/'])
-  end
-
-  @git.checkout('gh-pages', force: force)
-
-  updated = false
-
-  %w[java rb py dotnet javascript].each do |language|
-    source = "build/docs/api/#{language}"
-    destination = "docs/api/#{language}"
-
-    next unless Dir.exist?(source) && !Dir.empty?(source)
-
-    puts "Updating documentation for #{language}..."
-    FileUtils.rm_rf(destination)
-    FileUtils.mv(source, destination)
-
-    @git.add(destination)
-    updated = true
-  end
-
-  puts(updated ? 'Documentation staged. Ready for commit.' : 'No documentation changes found.')
 end
 
 def previous_tag(current_version, language = nil)
