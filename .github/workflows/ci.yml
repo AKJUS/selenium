@@ -18,6 +18,11 @@ permissions:
   contents: read
 
 jobs:
+  build-index:
+    name: Build Index
+    if: github.event_name == 'schedule'
+    uses: ./.github/workflows/ci-build-index.yml
+
   check:
     name: Check Targets
     if: >

@@ -160,6 +160,10 @@ Lint/Debugger:
 Lint/UselessConstantScoping:
   Enabled: false
 
+Lint/RedundantRequireStatement:
+  Exclude:
+    - '../Rakefile'
+
 RSpec/Output:
   Exclude:
     - 'spec/integration/selenium/webdriver/spec_support/test_environment.rb'
