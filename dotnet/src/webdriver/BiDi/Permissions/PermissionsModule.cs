@@ -32,7 +32,7 @@ public sealed class PermissionsModule : Module
     {
         var @params = new SetPermissionCommandParameters(descriptor, state, origin, options?.EmbeddedOrigin, options?.UserContext);
 
-        return await Broker.ExecuteCommandAsync(new SetPermissionCommand(@params), options, _jsonContext.SetPermissionCommand, _jsonContext.SetPermissionResult).ConfigureAwait(false);
+        return await ExecuteCommandAsync(new SetPermissionCommand(@params), options, _jsonContext.SetPermissionCommand, _jsonContext.SetPermissionResult).ConfigureAwait(false);
     }
 
     protected override void Initialize(JsonSerializerOptions jsonSerializerOptions)
