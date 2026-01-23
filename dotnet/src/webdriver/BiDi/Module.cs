@@ -26,8 +26,6 @@ namespace OpenQA.Selenium.BiDi;
 
 public abstract class Module
 {
-    protected BiDi BiDi { get; private set; } = null!;
-
     private Broker Broker { get; set; } = null!;
 
     protected Task<TResult> ExecuteCommandAsync<TCommand, TResult>(TCommand command, CommandOptions? options, JsonTypeInfo<TCommand> jsonCommandTypeInfo, JsonTypeInfo<TResult> jsonResultTypeInfo)
@@ -51,18 +49,17 @@ public abstract class Module
         return Broker.SubscribeAsync(eventName, eventHandler, options, jsonTypeInfo);
     }
 
-    protected abstract void Initialize(JsonSerializerOptions jsonSerializerOptions);
+    protected abstract void Initialize(BiDi bidi, JsonSerializerOptions jsonSerializerOptions);
 
     internal static TModule Create<TModule>(BiDi bidi, Broker broker, JsonSerializerOptions jsonSerializerOptions)
         where TModule : Module, new()
     {
         TModule module = new()
         {
-            BiDi = bidi,
             Broker = broker
         };
 
-        module.Initialize(jsonSerializerOptions);
+        module.Initialize(bidi, jsonSerializerOptions);
 
         return module;
     }
