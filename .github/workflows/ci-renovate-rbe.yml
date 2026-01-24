@@ -42,6 +42,9 @@ jobs:
     name: Commit Repins
     needs: pin
     if: github.event.repository.fork == false
+    permissions:
+      contents: write
+      actions: read
     uses: ./.github/workflows/commit-changes.yml
     with:
       artifact-name: repin-changes

@@ -43,6 +43,9 @@ jobs:
   push-rust-version:
     name: Push Rust Version
     needs: generate-rust-version
+    permissions:
+      contents: write
+      actions: read
     uses: ./.github/workflows/commit-changes.yml
     with:
       artifact-name: rust-version

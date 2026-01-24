@@ -151,6 +151,9 @@ jobs:
   update-version:
     name: Push Nightly Versions
     needs: [prepare, reset-version, unrestrict-trunk]
+    permissions:
+      contents: write
+      actions: read
     uses: ./.github/workflows/commit-changes.yml
     with:
       artifact-name: version-reset

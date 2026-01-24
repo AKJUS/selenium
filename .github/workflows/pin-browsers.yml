@@ -20,6 +20,9 @@ jobs:
     name: Push Changes
     needs: update
     if: github.event.repository.fork == false
+    permissions:
+      contents: write
+      actions: read
     uses: ./.github/workflows/commit-changes.yml
     with:
       artifact-name: pinned-browsers

@@ -68,6 +68,9 @@ jobs:
     name: Commit fixes
     needs: format
     if: failure() && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
+    permissions:
+      contents: write
+      actions: read
     uses: ./.github/workflows/commit-changes.yml
     with:
       artifact-name: format-changes
