@@ -92,6 +92,7 @@ jobs:
     steps:
       - name: Calculate fetch depth
         id: depth
+        shell: bash
         env:
           FETCH_DEPTH: ${{ inputs.fetch-depth }}
           PR_COMMITS: ${{ github.event.pull_request.commits }}
