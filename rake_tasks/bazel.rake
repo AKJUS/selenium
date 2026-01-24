@@ -114,7 +114,7 @@ def affected_targets_with_index(changed_files, index_file)
     return affected_targets_fallback(changed_files)
   end
 
-  test_files, lib_files = changed_files.partition { |f| f.match?(%r{[_-]test\.rb$|_test\.py$|Test\.java$|Tests?\.cs$|\.test\.[jt]s$|_spec\.rb$}) }
+  test_files, lib_files = changed_files.partition { |f| f.match?(/[_-]test\.rb$|_test\.py$|Test\.java$|Tests?\.cs$|\.test\.[jt]s$|_spec\.rb$/) }
 
   affected = Set.new
   affected.merge(targets_from_tests(test_files))
