@@ -22,8 +22,10 @@ verbose(false)
 require 'rake_tasks/bazel'
 require 'rake_tasks/common'
 
-$DEBUG = orig_verbose != Rake::FileUtilsExt::DEFAULT
-$DEBUG = true if ENV['debug'] == 'true'
+$DEBUG = orig_verbose != Rake::FileUtilsExt::DEFAULT ||
+         ENV['debug'] == 'true' ||
+         ENV.fetch('DEBUG', nil) ||
+         ENV.fetch('SE_DEBUG', nil)
 
 verbose($DEBUG)
 SeleniumRake.git = Git.open(__dir__)
