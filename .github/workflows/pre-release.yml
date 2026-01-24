@@ -105,8 +105,8 @@ jobs:
           fi
           echo "value=$VERSION" >> "$GITHUB_OUTPUT"
 
-  generate-updates:
-    name: Generate ${{ matrix.name }}
+  release-updates:
+    name: Generate ${{ matrix.name }} update
     needs: [restrict-trunk, normalize-version]
     strategy:
       fail-fast: false
@@ -118,8 +118,12 @@ jobs:
             run: ./go update_cdp ${{ inputs.chrome_channel }}
           - name: manager
             run: ./go update_manager
-          - name: dependencies
-            run: ./go release_update
+          - name: multitool
+            run: ./go update_multitool
+          - name: binding-versions
+            run: ./go all:version ${{ needs.normalize-version.outputs.version }} && ./go all:update
+          - name: rust-versions
+            run: ./go rust:version ${{ needs.normalize-version.outputs.version }} && ./go rust:update
           - name: authors
             run: ./go authors
     uses: ./.github/workflows/bazel.yml
@@ -127,15 +131,6 @@ jobs:
       name: Update ${{ matrix.name }}
       run: ${{ matrix.run }}
       artifact-name: patch-${{ matrix.name }}
-
-  generate-versions:
-    name: Generate Versions
-    needs: [restrict-trunk, normalize-version]
-    uses: ./.github/workflows/bazel.yml
-    with:
-      name: Bump Versions
-      run: ./go all:version ${{ needs.normalize-version.outputs.version }}
-      artifact-name: patch-versions
 
   calculate-changelog-depth:
     name: Calculate Changelog Depth
@@ -190,7 +185,7 @@ jobs:
 
   create-pr:
     name: Create Pull Request
-    needs: [normalize-version, generate-updates, generate-versions, generate-changelogs]
+    needs: [normalize-version, release-updates, generate-changelogs]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout trunk
@@ -227,9 +222,10 @@ jobs:
           apply_patch browsers "update pinned browser versions"
           apply_patch devtools "update devtools versions"
           apply_patch manager "update selenium manager versions"
-          apply_patch dependencies "update dependency versions"
+          apply_patch multitool "update multitool binaries"
+          apply_patch binding-versions "bump bindings version and dependencies"
+          apply_patch rust-versions "bump rust version and dependencies"
           apply_patch authors "update authors file"
-          apply_patch versions "bump versions in preparation for release"
           apply_patch changelogs "changelogs updated"
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
@@ -248,9 +244,10 @@ jobs:
             | Browser and driver versions | ${{ steps.apply.outputs.browsers == 'true' && '✅ Updated' || '⏭️ Skipped (no changes)' }} |
             | CDP version | ${{ steps.apply.outputs.devtools == 'true' && '✅ Updated' || '⏭️ Skipped (no changes)' }} |
             | Selenium Manager version | ${{ steps.apply.outputs.manager == 'true' && '✅ Updated' || '⏭️ Skipped (no changes)' }} |
-            | Update dependencies | ${{ steps.apply.outputs.dependencies == 'true' && '✅ Updated' || '⏭️ Skipped (no changes)' }} |
-            | Update Authors | ${{ steps.apply.outputs.authors == 'true' && '✅ Updated' || '⏭️ Skipped (no changes)' }} |
-            | Bump Versions | ${{ steps.apply.outputs.versions == 'true' && '✅ Updated' || '⏭️ Skipped (no changes)' }} |
+            | Multitool binaries | ${{ steps.apply.outputs.multitool == 'true' && '✅ Updated' || '⏭️ Skipped (no changes)' }} |
+            | Bindings Version & Dependencies | ${{ steps.apply.outputs.binding-versions == 'true' && '✅ Updated' || '⏭️ Skipped (no changes)' }} |
+            | Rust Version & Dependencies | ${{ steps.apply.outputs.rust-versions == 'true' && '✅ Updated' || '⏭️ Skipped (no changes)' }} |
+            | Authors | ${{ steps.apply.outputs.authors == 'true' && '✅ Updated' || '⏭️ Skipped (no changes)' }} |
             | Draft Changelogs | ${{ steps.apply.outputs.changelogs == 'true' && '✅ Updated' || '⏭️ Skipped (no changes)' }} |
 
             ---
