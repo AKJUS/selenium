@@ -12,7 +12,7 @@ jobs:
     uses: ./.github/workflows/bazel.yml
     with:
       name: Build Test Index
-      os: macos
+      os: ubuntu
       run: ./go bazel:build_test_index bazel-test-target-index
       artifact-name: bazel-test-target-index
       artifact-path: bazel-test-target-index
@@ -21,6 +21,7 @@ jobs:
     name: Cache Index
     needs: build
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
       - name: Download index
         uses: actions/download-artifact@v4
