@@ -251,7 +251,7 @@ task :release do |_task, arguments|
   if deployment_id
     puts "Retrying deployment: #{deployment_id}"
     poll_and_publish_deployment(deployment_id, token)
-    return
+    next
   end
 
   repo_domain = 'central.sonatype.com'
@@ -275,7 +275,7 @@ task :release do |_task, arguments|
   puts "Releasing Java artifacts to Maven repository at '#{ENV.fetch('MAVEN_REPO', nil)}'"
   java_release_targets.each { |target| Bazel.execute('run', ['--config=release'], target) }
 
-  return if nightly
+  next if nightly
 
   deployment_id = trigger_sonatype_validation(token)
   puts "Got deployment ID: #{deployment_id}"
