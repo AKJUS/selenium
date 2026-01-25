@@ -151,11 +151,19 @@ task :version, [:version] do |_task, arguments|
   File.open(conf, 'w') { |f| f.puts text }
 end
 
-desc 'Run Python linter (ruff check + format)'
-task :lint do |_task, arguments|
-  args = arguments.to_a
-  puts '  Running ruff check...'
-  Bazel.execute('run', args + ['--', 'check', '--fix', 'py/'], '@multitool//tools/ruff:cwd')
+desc 'Run Python formatter (ruff format)'
+task :format do |_task, arguments|
   puts '  Running ruff format...'
-  Bazel.execute('run', args + ['--', 'format', 'py/'], '@multitool//tools/ruff:cwd')
+  Bazel.execute('run', arguments.to_a, '//py:ruff-format')
+end
+
+desc 'Run Python linter (ruff check + format + mypy)'
+task :lint do |_task, arguments|
+  raise ArgumentError, 'arguments not supported in this task' unless arguments.to_a.empty?
+
+  Rake::Task['py:format'].invoke
+  puts '  Running ruff check...'
+  Bazel.execute('run', %w[-- --fix --show-fixes], '//py:ruff-check')
+  puts '  Running mypy...'
+  Bazel.execute('run', [], '//py:mypy')
 end
