@@ -68,7 +68,8 @@ task :release do |_task, arguments|
     if ENV.fetch('GITHUB_TOKEN', '').empty?
       raise 'Missing GitHub Packages token: set GITHUB_TOKEN for nightly Ruby publish'
     end
-    ENV['GEM_HOST_API_KEY'] = "Bearer #{ENV['GITHUB_TOKEN']}"
+
+    ENV['GEM_HOST_API_KEY'] = "Bearer #{ENV.fetch('GITHUB_TOKEN', nil)}"
 
     puts 'Bumping Ruby nightly version...'
     Bazel.execute('run', [], '//rb:selenium-webdriver-bump-nightly-version')
