@@ -199,7 +199,7 @@ _LINT_ARGS = [
 
 _LINT_DATA = [
     ".rubocop.yml",
-    "//:rakefile",
+    "//:rake_tasks",
 ]
 
 _LINT_DEPS = [
