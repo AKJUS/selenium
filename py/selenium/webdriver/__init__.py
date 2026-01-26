@@ -25,6 +25,10 @@ if os.environ.get("SE_DEBUG"):
     logger.setLevel(logging.DEBUG)
     if not logger.handlers:
         logger.addHandler(logging.StreamHandler())
+    logger.warning(
+        "Environment Variable `SE_DEBUG` is set; "
+        "Selenium is forcing verbose logging which may override user-specified settings."
+    )
 
 __version__ = "4.41.0.202601181916"
 
