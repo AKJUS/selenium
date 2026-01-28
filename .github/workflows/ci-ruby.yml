@@ -15,13 +15,21 @@ jobs:
       name: Build
       run: bazel build //rb:selenium-devtools //rb:selenium-webdriver
 
-  lint:
-    name: Lint
+  docs:
+    name: Documentation
     needs: build
     uses: ./.github/workflows/bazel.yml
     with:
-      name: Lint
-      run: ./go rb:lint
+      name: Documentation
+      run: bazel run //rb:docs
+
+  steep-check:
+    name: Type Check (Steep)
+    needs: build
+    uses: ./.github/workflows/bazel.yml
+    with:
+      name: Type Check (Steep)
+      run: bazel run //rb:steep
 
   unit-tests:
     name: Unit Tests

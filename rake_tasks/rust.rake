@@ -22,15 +22,11 @@ end
 desc 'Pin Rust dependencies'
 task pin: :update
 
-desc 'Format Rust code with rustfmt'
-task :format do
+desc 'Run Rust linting'
+task :lint do |_task, arguments|
+  args = arguments.to_a
   puts '  Running rustfmt...'
-  Bazel.execute('run', [], '@rules_rust//:rustfmt')
-end
-
-desc 'Run Rust linter (no-op, clippy not configured)'
-task :lint do
-  puts '  Rust linting not configured'
+  Bazel.execute('run', args, '@rules_rust//:rustfmt')
 end
 
 desc 'Update Rust changelog'

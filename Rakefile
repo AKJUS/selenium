@@ -123,31 +123,49 @@ task :release_updates, [:tag, :channel] do |_task, arguments|
   Rake::Task["#{language}:changelogs"].invoke
 end
 
-desc 'Format code (auto-fix issues across project, skip with -<lang>)'
-task :format do |_task, arguments|
-  args = arguments.to_a
+desc 'Run linters for all languages (skip with: ./go lint -rb -rust)'
+task :lint do |_task, arguments|
+  failures = []
+  values = arguments.to_a
 
-  puts 'Formatting Bazel files...'
-  Bazel.execute('run', [], '//:buildifier')
-
-  puts 'Updating copyright headers...'
-  Bazel.execute('run', [], '//scripts:update_copyright')
-
-  unless args.delete('-rust')
-    puts 'Formatting rust...'
-    Rake::Task['rust:format'].invoke
+  unless values.delete('-rust')
+    puts 'Linting rust...'
+    begin
+      Rake::Task['rust:lint'].invoke
+    rescue StandardError => e
+      failures << "rust: #{e.message}"
+    end
   end
 
-  Rake::Task['all:format'].invoke(*args)
-end
+  begin
+    Rake::Task['all:lint'].invoke(*values)
+  rescue StandardError => e
+    failures << e.message
+  end
 
-desc 'Run linters (non-auto-fixable checks)'
-task :lint do
+  puts 'Linting Bazel files...'
+  begin
+    Bazel.execute('run', [], '//:buildifier')
+  rescue StandardError => e
+    failures << "buildifier: #{e.message}"
+  end
+
   puts 'Linting shell scripts and GitHub Actions...'
-  shellcheck = Bazel.execute('build', [], '@multitool//tools/shellcheck')
-  Bazel.execute('run', ['--', '-shellcheck', shellcheck], '@multitool//tools/actionlint:cwd')
+  begin
+    shellcheck = Bazel.execute('build', [], '@multitool//tools/shellcheck')
+    Bazel.execute('run', ['--', '-shellcheck', shellcheck], '@multitool//tools/actionlint:cwd')
+  rescue StandardError => e
+    failures << "shellcheck/actionlint: #{e.message}"
+  end
 
-  Rake::Task['all:lint'].invoke
+  puts 'Updating copyright headers...'
+  begin
+    Bazel.execute('run', [], '//scripts:update_copyright')
+  rescue StandardError => e
+    failures << "copyright: #{e.message}"
+  end
+
+  raise "Lint failed:\n#{failures.join("\n")}" unless failures.empty?
 end
 
 # Legacy aliases - call namespaced tasks
@@ -237,25 +255,16 @@ namespace :all do
     Rake::Task['node:release'].invoke(*args)
   end
 
-  LANG_ALIASES = {
-    'python' => 'py', 'ruby' => 'rb', 'javascript' => 'node', 'js' => 'node'
-  }.freeze
+  desc 'Run linters for all language bindings (skip with: ./go all:lint -rb)'
+  task :lint do |_task, arguments|
+    all_langs = %w[java py rb node]
+    skip = arguments.to_a.select { |a| a.start_with?('-') }.map { |a| a.delete_prefix('-') }
+    invalid = skip - all_langs
+    raise "Unknown languages: #{invalid.join(', ')}. Valid: #{all_langs.join(', ')}" if invalid.any?
 
-  desc 'Format code for all language bindings (skip with -java -py -rb -dotnet -node)'
-  task :format do |_task, arguments|
-    all_langs = %w[java py rb dotnet node]
-    skip = arguments.to_a.map { |a| LANG_ALIASES.fetch(a.delete_prefix('-'), a.delete_prefix('-')) }
-    (all_langs - skip).each do |lang|
-      puts "Formatting #{lang}..."
-      Rake::Task["#{lang}:format"].invoke
-    end
-  end
-
-  desc 'Run linters for all language bindings'
-  task :lint do
-    all_langs = %w[java py rb dotnet node]
+    langs = all_langs - skip
     failures = []
-    all_langs.each do |lang|
+    langs.each do |lang|
       puts "Linting #{lang}..."
       Rake::Task["#{lang}:lint"].invoke
     rescue StandardError => e
