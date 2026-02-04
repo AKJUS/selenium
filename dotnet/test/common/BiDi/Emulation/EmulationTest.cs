@@ -223,4 +223,26 @@ internal class EmulationTest : BiDiTestFixture
         },
         Throws.Nothing);
     }
+
+    [Test]
+    [IgnoreBrowser(Selenium.Browser.Firefox, "Not supported yet?")]
+    public void CanSetNetworkConditionsOffline()
+    {
+        Assert.That(async () =>
+        {
+            await bidi.Emulation.SetNetworkConditionsAsync(new NetworkConditionsOffline(), new() { Contexts = [context] });
+        },
+        Throws.Nothing);
+    }
+
+    [Test]
+    [IgnoreBrowser(Selenium.Browser.Firefox, "Not supported yet?")]
+    public void CanSetNetworkConditionsToDefault()
+    {
+        Assert.That(async () =>
+        {
+            await bidi.Emulation.SetNetworkConditionsAsync(null, new() { Contexts = [context] });
+        },
+        Throws.Nothing);
+    }
 }
