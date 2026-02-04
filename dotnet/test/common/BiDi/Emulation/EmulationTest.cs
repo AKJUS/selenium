@@ -197,4 +197,30 @@ internal class EmulationTest : BiDiTestFixture
         },
         Throws.Nothing);
     }
+
+    [Test]
+    [IgnoreBrowser(Selenium.Browser.Chrome, "Not supported yet?")]
+    [IgnoreBrowser(Selenium.Browser.Edge, "Not supported yet?")]
+    [IgnoreBrowser(Selenium.Browser.Firefox, "Not supported yet?")]
+    public void CanSetTouchOverride()
+    {
+        Assert.That(async () =>
+        {
+            await bidi.Emulation.SetTouchOverrideAsync(5, new() { Contexts = [context] });
+        },
+        Throws.Nothing);
+    }
+
+    [Test]
+    [IgnoreBrowser(Selenium.Browser.Chrome, "Not supported yet?")]
+    [IgnoreBrowser(Selenium.Browser.Edge, "Not supported yet?")]
+    [IgnoreBrowser(Selenium.Browser.Firefox, "Not supported yet?")]
+    public void CanSetTouchOverrideToDefault()
+    {
+        Assert.That(async () =>
+        {
+            await bidi.Emulation.SetTouchOverrideAsync(null, new() { Contexts = [context] });
+        },
+        Throws.Nothing);
+    }
 }
