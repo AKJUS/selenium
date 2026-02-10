@@ -435,10 +435,14 @@ public class HttpCommandExecutor : ICommandExecutor
         /// <returns>The http response message content.</returns>
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            if (_logger.IsEnabled(LogEventLevel.Trace))
+            bool isTracingEnabled = _logger.IsEnabled(LogEventLevel.Trace);
+            string? correlationId = isTracingEnabled ? request.GetHashCode().ToString("x8") : null;
+
+            if (isTracingEnabled)
             {
                 StringBuilder requestLogMessageBuilder = new();
-                requestLogMessageBuilder.AppendFormat(">> {0} {1}",
+                requestLogMessageBuilder.AppendFormat(">> [{0}] {1} {2}",
+                    correlationId,
                     request.Method,
                     request.RequestUri?.ToString() ?? "null");
 
@@ -455,13 +459,29 @@ public class HttpCommandExecutor : ICommandExecutor
                 _logger.Trace(requestLogMessageBuilder.ToString());
             }
 
-            var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage response;
 
-            if (_logger.IsEnabled(LogEventLevel.Trace))
+            try
+            {
+                response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                if (isTracingEnabled)
+                {
+                    _logger.Trace($"!! [{correlationId}] {ex}");
+                }
+
+                throw;
+            }
+
+            if (isTracingEnabled)
             {
                 StringBuilder responseLogMessageBuilder = new();
-
-                responseLogMessageBuilder.AppendFormat("<< {0} {1}", (int)response.StatusCode, response.ReasonPhrase);
+                responseLogMessageBuilder.AppendFormat("<< [{0}] {1} {2}",
+                    correlationId,
+                    (int)response.StatusCode,
+                    response.ReasonPhrase);
 
                 if (!response.IsSuccessStatusCode && response.Content != null)
                 {
