@@ -97,13 +97,13 @@ internal sealed class LogContext : ILogContext
         return Handlers != null && level >= _level && (_loggers?.TryGetValue(logger.Issuer, out var loggerEntry) != true || level >= loggerEntry?.Level);
     }
 
-    public void EmitMessage(ILogger logger, LogEventLevel level, string message)
+    public void EmitMessage(ILogger logger, DateTimeOffset timestamp, LogEventLevel level, string message)
     {
         if (IsEnabled(logger, level))
         {
-            message = TruncateMessage(message, _truncationLength);
+            string truncatedMessage = TruncateMessage(message, _truncationLength);
 
-            var logEvent = new LogEvent(logger.Issuer, DateTimeOffset.Now, level, message);
+            var logEvent = new LogEvent(logger.Issuer, timestamp, level, truncatedMessage);
 
             foreach (var handler in Handlers)
             {
