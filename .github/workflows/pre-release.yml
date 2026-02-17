@@ -80,7 +80,13 @@ jobs:
     uses: ./.github/workflows/restrict-trunk.yml
     with:
       restrict: true
-    secrets: inherit
+      message: |
+        Trunk branch has been restricted for release preparation (${{ inputs.tag }}).
+        To unlock due to release issues, run the "Unlock Trunk" workflow:
+        https://github.com/${{ github.repository }}/actions/workflows/unlock-trunk.yml
+    secrets:
+      SELENIUM_CI_TOKEN: ${{ secrets.SELENIUM_CI_TOKEN }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   release-updates:
     name: Generate ${{ matrix.name }} update
