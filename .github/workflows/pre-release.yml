@@ -19,24 +19,13 @@ permissions:
   contents: read
 
 jobs:
-  get-approval:
-    name: Get Approval
-    uses: ./.github/workflows/get-approval.yml
-    with:
-      title: Release approval needed
-      message: |
-        Selenium ${{ github.event.inputs.tag }} release preparation started.
-        Please approve to lock trunk when ready.
-    secrets:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
   parse-tag:
     name: Parse Tag
     uses: ./.github/workflows/parse-release-tag.yml
     with:
       tag: ${{ inputs.tag }}
 
-  # Rust jobs can execute in parallel with approval job since work is in a separate branch
+  # Do not need to lock trunk before Rust jobs since work is in a separate branch
   generate-rust-version:
     name: Generate Rust Version
     needs: parse-tag
@@ -86,8 +75,8 @@ jobs:
 
   restrict-trunk:
     name: Restrict Trunk Branch
-    needs: [parse-tag, get-approval, selenium-manager]
-    if: always() && !cancelled() && needs.get-approval.result == 'success' && (needs.selenium-manager.result == 'success' || needs.selenium-manager.result == 'skipped')
+    needs: [parse-tag, selenium-manager]
+    if: always() && !cancelled() && needs.parse-tag.result == 'success' && (needs.selenium-manager.result == 'success' || needs.selenium-manager.result == 'skipped')
     uses: ./.github/workflows/restrict-trunk.yml
     with:
       restrict: true
