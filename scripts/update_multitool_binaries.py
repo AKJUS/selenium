@@ -49,9 +49,14 @@ def run(lockfile_path):
             print(f"found new version of '{tool}': {new_version}")
             urls = [asset.get("browser_download_url") for asset in assets]
             hashes = [asset.get("digest").split(":")[1] for asset in assets]
+            bare_version = version.lstrip("v")
+            bare_new = new_version.lstrip("v")
             for binary in data[tool]["binaries"]:
                 new_url = binary["url"].replace(version, new_version)
                 new_file = binary["file"].replace(version, new_version)
+                if bare_version != version:
+                    new_url = new_url.replace(bare_version, bare_new)
+                    new_file = new_file.replace(bare_version, bare_new)
                 new_hash = hashes[urls.index(new_url)]
                 binary["url"] = new_url
                 binary["file"] = new_file
