@@ -369,7 +369,7 @@ end
 
 desc 'Pin Maven dependencies'
 task :pin do
-  args = ['--action_env=RULES_JVM_EXTERNAL_REPIN=1']
+  args = ['--repo_env=RULES_JVM_EXTERNAL_REPIN=1']
   Bazel.execute('run', args, '@maven//:pin')
 end
 
