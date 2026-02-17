@@ -12,7 +12,7 @@ usage: update_multitool_binaries.py [-h] [--file LOCKFILE_PATH]
 
 options:
   -h, --help            show this help message and exit
-  --file LOCKFILE_PATH  path to multitool lockfile (defaults to 'multitool.lock.json' in current directory)
+  --file LOCKFILE_PATH  path to multitool lockfile (defaults to 'multitool.lock.json' in workspace directory)
 -----------------------------------------------------------------------------------------------------------
 """
 
@@ -66,11 +66,12 @@ def run(lockfile_path):
 
 def main():
     parser = argparse.ArgumentParser()
+    workspace_dir = os.environ.get("BUILD_WORKSPACE_DIRECTORY", os.getcwd())
     parser.add_argument(
         "--file",
         dest="lockfile_path",
-        default=os.path.join(os.getcwd(), "multitool.lock.json"),
-        help="path to multitool lockfile (defaults to 'multitool.lock.json' in current directory)",
+        default=os.path.join(workspace_dir, "multitool.lock.json"),
+        help="path to multitool lockfile (defaults to 'multitool.lock.json' in workspace directory)",
     )
     args = parser.parse_args()
     run(args.lockfile_path)
