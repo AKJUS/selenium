@@ -7,10 +7,6 @@ concurrency:
   cancel-in-progress: false
 
 on:
-  pull_request:
-    types: [ready_for_review, closed]
-    branches:
-      - trunk
   workflow_dispatch:
     inputs:
       restrict:
@@ -37,7 +33,7 @@ on:
 jobs:
   get-approval:
     name: Get Approval
-    if: github.event_name == 'workflow_dispatch' && github.event.repository.fork == false
+    if: inputs.restrict
     uses: ./.github/workflows/get-approval.yml
     with:
       title: Trunk branch locking
@@ -49,21 +45,14 @@ jobs:
     name: Manage Trunk Branch
     needs: [get-approval]
     runs-on: ubuntu-latest
-    if: |
-      always() &&
-      (needs.get-approval.result == 'success' || needs.get-approval.result == 'skipped') &&
-      github.event.repository.fork == false &&
-      (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call' ||
-       (startsWith(github.event.pull_request.head.ref, 'release-preparation-') &&
-        (github.event.action == 'ready_for_review' ||
-         (github.event.action == 'closed' && github.event.pull_request.merged == false))))
+    if: always() && (needs.get-approval.result == 'success' || !inputs.restrict)
     strategy:
       matrix:
         ruleset_id:
           - 11911909  # Release In Progress Access (restrict updates to trunk to release managers)
           - 11912022  # Release In Progress Flow (requires branches to be up to date before merging)
     env:
-      TRUNK_RESTRICTED: ${{ inputs.restrict || github.event.action == 'ready_for_review' }}
+      TRUNK_RESTRICTED: ${{ inputs.restrict }}
     steps:
       - name: Update ruleset enforcement
         uses: octokit/request-action@v2.4.0
@@ -80,9 +69,8 @@ jobs:
     name: Send Notification
     needs: [manage-trunk]
     runs-on: ubuntu-latest
-    if: github.event.repository.fork == false
     env:
-      TRUNK_RESTRICTED: ${{ inputs.restrict || github.event.action == 'ready_for_review' }}
+      TRUNK_RESTRICTED: ${{ inputs.restrict }}
     steps:
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
