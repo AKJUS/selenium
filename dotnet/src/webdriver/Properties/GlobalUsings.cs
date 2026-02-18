@@ -1,4 +1,4 @@
-// <copyright file="CamelCaseEnumConverter.cs" company="Selenium Committers">
+// <copyright file="GlobalUsings.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,10 +17,10 @@
 // under the License.
 // </copyright>
 
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
-namespace OpenQA.Selenium.BiDi.Json.Converters;
-
-public class CamelCaseEnumConverter<TEnum>() :
-    JsonStringEnumConverter<TEnum>(JsonNamingPolicy.CamelCase) where TEnum : struct, Enum;
+global using global::System;
+global using global::System.Collections.Generic;
+global using global::System.IO;
+global using global::System.Linq;
+global using global::System.Net.Http;
+global using global::System.Threading;
+global using global::System.Threading.Tasks;
