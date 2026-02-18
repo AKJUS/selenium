@@ -244,7 +244,9 @@ public abstract class DriverService : ICommandServer
         }
         else
         {
-            this.driverServiceProcess.StartInfo.FileName = new DriverFinder(this.GetDefaultDriverOptions()).GetDriverPath();
+            var driverFinder = new DriverFinder(this.GetDefaultDriverOptions());
+            var driverPath = Task.Run(async () => await driverFinder.GetDriverPathAsync()).GetAwaiter().GetResult();
+            this.driverServiceProcess.StartInfo.FileName = driverPath;
         }
 
         this.driverServiceProcess.StartInfo.Arguments = this.CommandLineArguments;
