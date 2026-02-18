@@ -167,7 +167,24 @@ public class ChromiumDriver : WebDriver, ISupportsLogs, IDevTools
             options.BrowserVersion = null;
         }
 
-        return new DriverServiceCommandExecutor(service, commandTimeout);
+        try
+        {
+            service.Start();
+            return new DriverServiceCommandExecutor(service, commandTimeout);
+        }
+        catch
+        {
+            try
+            {
+                service.Dispose();
+            }
+            catch
+            {
+                // Ignore exceptions thrown while disposing the service to preserve the original exception.
+            }
+
+            throw;
+        }
     }
 
     /// <summary>
