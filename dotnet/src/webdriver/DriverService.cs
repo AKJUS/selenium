@@ -182,10 +182,26 @@ public abstract class DriverService : IDisposable
     }
 
     /// <summary>
-    /// Starts the DriverService if it is not already running.
+    /// Starts the driver service if it is not already running.
     /// </summary>
-    [MemberNotNull(nameof(driverServiceProcess))]
+    /// <exception cref="InvalidOperationException">If the driver service path is specified but the driver service executable name is not.</exception>
+    /// <exception cref="WebDriverException">If the service fails to initialize within the timeout period or exits unexpectedly.</exception>
+    [Obsolete("Use StartAsync(CancellationToken) instead. This method will be removed in a future release (4.43).")]
     public void Start()
+    {
+        this.StartAsync().GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    /// Starts the driver service if it is not already running.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous start operation.</returns>
+    /// <exception cref="InvalidOperationException">If the driver service path is specified but the driver service executable name is not.</exception>
+    /// <exception cref="WebDriverException">If the service fails to initialize within the timeout period or exits unexpectedly.</exception>
+    /// <exception cref="OperationCanceledException">If the operation is cancelled via the cancellation token.</exception>
+    [MemberNotNull(nameof(driverServiceProcess))]
+    public async ValueTask StartAsync(CancellationToken cancellationToken = default)
     {
         if (this.driverServiceProcess != null)
         {
@@ -206,7 +222,7 @@ public abstract class DriverService : IDisposable
         else
         {
             var driverFinder = new DriverFinder(this.GetDefaultDriverOptions());
-            var driverPath = Task.Run(async () => await driverFinder.GetDriverPathAsync()).GetAwaiter().GetResult();
+            var driverPath = await driverFinder.GetDriverPathAsync(cancellationToken).ConfigureAwait(false);
             this.driverServiceProcess.StartInfo.FileName = driverPath;
         }
 
@@ -232,7 +248,7 @@ public abstract class DriverService : IDisposable
         this.driverServiceProcess.BeginOutputReadLine();
         this.driverServiceProcess.BeginErrorReadLine();
 
-        this.WaitForServiceInitializationAsync().GetAwaiter().GetResult();
+        await this.WaitForServiceInitializationAsync(cancellationToken).ConfigureAwait(false);
 
         DriverProcessStartedEventArgs processStartedEventArgs = new DriverProcessStartedEventArgs(this.driverServiceProcess);
         this.OnDriverProcessStarted(processStartedEventArgs);
