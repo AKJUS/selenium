@@ -72,6 +72,12 @@ module SeleniumRake
     end
   end
 
+  def self.cdp_versions
+    Dir.glob('common/devtools/chromium/v*/')
+       .map { |d| File.basename(d) }
+       .sort_by { |v| v.delete_prefix('v').to_i }
+  end
+
   def self.update_changelog(version, language, path, changelog, header)
     tag = previous_tag(version, language)
     bullet = language == 'javascript' ? '-' : '*'
@@ -88,6 +94,12 @@ module SeleniumRake
                  .map { |line| line.gsub(tags_to_remove, '') }
                  .map { |line| "#{bullet} #{line}" }
                  .join("\n")
+
+    if version[-1] == '0' && language != 'rust'
+      versions = cdp_versions.join(', ')
+      cdp_line = "#{bullet} Support CDP versions: #{versions}"
+      entries = entries.empty? ? cdp_line : "#{cdp_line}\n#{entries}"
+    end
 
     content = File.read(changelog)
     File.write(changelog, "#{header}\n#{entries}\n\n#{content}")
