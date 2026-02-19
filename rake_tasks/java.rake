@@ -365,6 +365,7 @@ task :update do
   end
   File.write(file_path, content)
 
+  Rake::Task['java:pin'].reenable
   Rake::Task['java:pin'].invoke
 end
 
