@@ -151,20 +151,63 @@ jobs:
       run: ./go ${{ needs.parse-tag.outputs.language }}:update${{ needs.parse-tag.outputs.language == 'all' && ' && ./go rust:update' || '' }}
       artifact-name: patch-dep-updates
 
-  update-changelogs:
-    name: Generate Changelogs
+  calculate-changelog-depth:
+    name: Calculate Changelog Depth
     needs: [parse-tag, commit-versions, commit-devtools]
     if: >-
       always() &&
       needs.commit-versions.result == 'success' &&
       (needs.parse-tag.outputs.language != 'all' || needs.commit-devtools.result == 'success')
+    runs-on: ubuntu-latest
+    outputs:
+      depth: ${{ steps.calc.outputs.depth }}
+    steps:
+      - name: Calculate fetch depth from tag
+        id: calc
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.parse-tag.outputs.version }}
+          TAG: ${{ needs.parse-tag.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$VERSION" =~ ([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
+            MAJOR=${BASH_REMATCH[1]}
+            MINOR=${BASH_REMATCH[2]}
+            PATCH=${BASH_REMATCH[3]}
+
+            if [ "$PATCH" -gt 1 ]; then
+              PREV="selenium-${MAJOR}.${MINOR}.$((PATCH-1))"
+            elif [ "$PATCH" -eq 1 ]; then
+              PREV="selenium-${MAJOR}.${MINOR}.0"
+            elif [ "$MINOR" -gt 0 ]; then
+              PREV="selenium-${MAJOR}.$((MINOR-1)).0"
+            else
+              # First release of major version (X.0.0), use full history
+              echo "depth=0" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            COUNT=$(gh api "repos/${{ github.repository }}/compare/${PREV}...staging/release-${TAG}" --jq '.total_commits' 2>/dev/null) || {
+              echo "::warning::Failed to get commit count, using full history"
+              echo "depth=0" >> "$GITHUB_OUTPUT"
+              exit 0
+            }
+            echo "depth=$((COUNT + 1))" >> "$GITHUB_OUTPUT"
+          else
+            echo "depth=0" >> "$GITHUB_OUTPUT"
+          fi
+
+  update-changelogs:
+    name: Generate Changelogs
+    needs: [parse-tag, calculate-changelog-depth]
     uses: ./.github/workflows/bazel.yml
     with:
       name: Update changelogs
       ref: staging/release-${{ needs.parse-tag.outputs.tag }}
       run: ./go ${{ needs.parse-tag.outputs.language }}:changelogs${{ needs.parse-tag.outputs.language == 'all' && ' && ./go rust:changelogs' || '' }}
       artifact-name: patch-changelogs
-      fetch-depth: '0'
+      fetch-depth: ${{ needs.calculate-changelog-depth.outputs.depth }}
 
   release-updates:
     name: Update ${{ matrix.name }}
@@ -194,7 +237,7 @@ jobs:
 
   create-pr:
     name: Create Pull Request
-    needs: [parse-tag, commit-versions, commit-devtools, update-dependencies, update-changelogs, release-updates]
+    needs: [parse-tag, update-dependencies, update-changelogs, release-updates]
     if: >-
       always() && !cancelled() &&
       needs.update-dependencies.result == 'success' &&
@@ -202,11 +245,10 @@ jobs:
       needs.release-updates.result != 'failure'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout staging branch
+      - name: Checkout trunk
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.SELENIUM_CI_TOKEN }}
-          ref: staging/release-${{ needs.parse-tag.outputs.tag }}
       - name: Download all patches
         uses: actions/download-artifact@v4
         with:
@@ -231,12 +273,15 @@ jobs:
               echo "${name}=false" >> "$GITHUB_OUTPUT"
             fi
           }
+          apply_patch versions "bump versions"
+          apply_patch devtools "update devtools versions"
           apply_patch dep-updates "update dependencies"
           apply_patch changelogs "changelogs updated"
           apply_patch browsers "update pinned browser versions"
           apply_patch manager "update selenium manager versions"
           apply_patch multitool "update multitool binaries"
           apply_patch authors "update authors file"
+          rm -rf patches
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
@@ -258,8 +303,8 @@ jobs:
             ### Updates Applied
             | Component | Status |
             |-----------|--------|
-            | Versions | ${{ needs.commit-versions.outputs.changes-committed == 'true' && '✅ Updated' || '⏭️ Skipped (no changes)' }} |
-            | CDP version | ${{ needs.parse-tag.outputs.language != 'all' && 'N/A' || (needs.commit-devtools.outputs.changes-committed == 'true' && '✅ Updated' || '⏭️ Skipped (no changes)') }} |
+            | Versions | ${{ steps.apply.outputs.versions == 'true' && '✅ Updated' || '⏭️ Skipped (no changes)' }} |
+            | CDP version | ${{ needs.parse-tag.outputs.language != 'all' && 'N/A' || (steps.apply.outputs.devtools == 'true' && '✅ Updated' || '⏭️ Skipped (no changes)') }} |
             | Binding Dependencies | ${{ steps.apply.outputs.dep-updates == 'true' && '✅ Updated' || '⏭️ Skipped (no changes)' }} |
             | Changelogs | ${{ steps.apply.outputs.changelogs == 'true' && '✅ Updated' || '⏭️ Skipped (no changes)' }} |
             | Pinned Browsers | ${{ needs.parse-tag.outputs.language != 'all' && 'N/A' || (steps.apply.outputs.browsers == 'true' && '✅ Updated' || '⏭️ Skipped (no changes)') }} |
