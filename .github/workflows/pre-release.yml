@@ -211,7 +211,7 @@ jobs:
 
   release-updates:
     name: Update ${{ matrix.name }}
-    needs: [parse-tag, commit-devtools, selenium-manager]
+    needs: [parse-tag, commit-devtools, selenium-manager, calculate-changelog-depth]
     strategy:
       fail-fast: false
       matrix:
