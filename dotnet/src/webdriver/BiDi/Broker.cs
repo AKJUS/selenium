@@ -113,7 +113,7 @@ internal sealed class Broker : IAsyncDisposable
 
         _receiveMessagesCancellationTokenSource.Dispose();
 
-        _transport.Dispose();
+        await _transport.DisposeAsync().ConfigureAwait(false);
 
         GC.SuppressFinalize(this);
     }
@@ -267,6 +267,15 @@ internal sealed class Broker : IAsyncDisposable
             if (_logger.IsEnabled(LogEventLevel.Error))
             {
                 _logger.Error($"Unhandled error occurred while receiving remote messages: {ex}");
+            }
+
+            // Fail all pending commands, as the connection is likely broken if we failed to receive messages.
+            foreach (var id in _pendingCommands.Keys)
+            {
+                if (_pendingCommands.TryRemove(id, out var pendingCommand))
+                {
+                    pendingCommand.TaskCompletionSource.TrySetException(ex);
+                }
             }
 
             throw;
