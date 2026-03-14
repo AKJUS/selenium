@@ -126,6 +126,10 @@ class InstanceCoercer extends TypeCoercer<Object> {
                         }
                       };
                   return new TypeAndWriter(type, writer);
+                },
+                (existing, replacement) -> {
+                  throw new JsonException(
+                      "Duplicate JSON field name detected while collecting field writers");
                 }));
   }
 
