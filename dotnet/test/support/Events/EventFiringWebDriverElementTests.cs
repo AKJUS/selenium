@@ -18,6 +18,7 @@
 // </copyright>
 
 using NUnit.Framework;
+using OpenQA.Selenium.Tests;
 
 namespace OpenQA.Selenium.Support.Events;
 

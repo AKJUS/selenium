@@ -20,6 +20,8 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using OpenQA.Selenium.Tests;
+using OpenQA.Selenium.Tests.Infrastructure;
 
 namespace OpenQA.Selenium.Support.UI;
 
