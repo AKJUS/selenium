@@ -1,4 +1,4 @@
-// <copyright file="FileDialogEventArgs.cs" company="Selenium Committers">
+// <copyright file="BaseParameters.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,7 +17,14 @@
 // under the License.
 // </copyright>
 
-namespace OpenQA.Selenium.BiDi.Input;
+namespace OpenQA.Selenium.BiDi.Network;
 
-public sealed record FileDialogEventArgs(BrowsingContext.BrowsingContext Context, Browser.UserContext? UserContext, bool Multiple, Script.SharedReference? Element)
-    : EventArgs;
+internal abstract record BaseParameters(
+    BrowsingContext.BrowsingContext? Context,
+    bool IsBlocked,
+    BrowsingContext.Navigation? Navigation,
+    long RedirectCount,
+    RequestData Request,
+    DateTimeOffset Timestamp,
+    Browser.UserContext? UserContext,
+    IReadOnlyList<Intercept>? Intercepts);

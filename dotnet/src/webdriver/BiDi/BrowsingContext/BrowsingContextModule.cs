@@ -111,145 +111,178 @@ public sealed class BrowsingContextModule : Module, IBrowsingContextModule
         return await ExecuteCommandAsync(new HandleUserPromptCommand(@params), options, _jsonContext.HandleUserPromptCommand, _jsonContext.HandleUserPromptResult, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Subscription> OnNavigationStartedAsync(Func<NavigationEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Subscription> OnNavigationStartedAsync(Func<NavigationStartedEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.navigationStarted", handler, options, _jsonContext.NavigationEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.navigationStarted", handler, CreateNavigationStartedEventArgs, options, _jsonContext.NavigationInfo, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Subscription> OnNavigationStartedAsync(Action<NavigationEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Subscription> OnNavigationStartedAsync(Action<NavigationStartedEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.navigationStarted", handler, options, _jsonContext.NavigationEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.navigationStarted", handler, CreateNavigationStartedEventArgs, options, _jsonContext.NavigationInfo, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Subscription> OnFragmentNavigatedAsync(Func<NavigationEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Subscription> OnFragmentNavigatedAsync(Func<FragmentNavigatedEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.fragmentNavigated", handler, options, _jsonContext.NavigationEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.fragmentNavigated", handler, CreateFragmentNavigatedEventArgs, options, _jsonContext.NavigationInfo, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Subscription> OnFragmentNavigatedAsync(Action<NavigationEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Subscription> OnFragmentNavigatedAsync(Action<FragmentNavigatedEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.fragmentNavigated", handler, options, _jsonContext.NavigationEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.fragmentNavigated", handler, CreateFragmentNavigatedEventArgs, options, _jsonContext.NavigationInfo, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Subscription> OnHistoryUpdatedAsync(Func<HistoryUpdatedEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.historyUpdated", handler, options, _jsonContext.HistoryUpdatedEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.historyUpdated", handler, CreateHistoryUpdatedEventArgs, options, _jsonContext.HistoryUpdatedParameters, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Subscription> OnHistoryUpdatedAsync(Action<HistoryUpdatedEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.historyUpdated", handler, options, _jsonContext.HistoryUpdatedEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.historyUpdated", handler, CreateHistoryUpdatedEventArgs, options, _jsonContext.HistoryUpdatedParameters, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Subscription> OnDomContentLoadedAsync(Func<NavigationEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Subscription> OnDomContentLoadedAsync(Func<DomContentLoadedEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.domContentLoaded", handler, options, _jsonContext.NavigationEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.domContentLoaded", handler, CreateDomContentLoadedEventArgs, options, _jsonContext.NavigationInfo, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Subscription> OnDomContentLoadedAsync(Action<NavigationEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Subscription> OnDomContentLoadedAsync(Action<DomContentLoadedEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.domContentLoaded", handler, options, _jsonContext.NavigationEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.domContentLoaded", handler, CreateDomContentLoadedEventArgs, options, _jsonContext.NavigationInfo, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Subscription> OnLoadAsync(Func<NavigationEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Subscription> OnLoadAsync(Func<LoadEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.load", handler, options, _jsonContext.NavigationEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.load", handler, CreateLoadEventArgs, options, _jsonContext.NavigationInfo, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Subscription> OnLoadAsync(Action<NavigationEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Subscription> OnLoadAsync(Action<LoadEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.load", handler, options, _jsonContext.NavigationEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.load", handler, CreateLoadEventArgs, options, _jsonContext.NavigationInfo, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Subscription> OnDownloadWillBeginAsync(Func<DownloadWillBeginEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.downloadWillBegin", handler, options, _jsonContext.DownloadWillBeginEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.downloadWillBegin", handler, CreateDownloadWillBeginEventArgs, options, _jsonContext.DownloadWillBeginParams, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Subscription> OnDownloadWillBeginAsync(Action<DownloadWillBeginEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.downloadWillBegin", handler, options, _jsonContext.DownloadWillBeginEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.downloadWillBegin", handler, CreateDownloadWillBeginEventArgs, options, _jsonContext.DownloadWillBeginParams, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Subscription> OnDownloadEndAsync(Func<DownloadEndEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.downloadEnd", handler, options, _jsonContext.DownloadEndEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.downloadEnd", handler, CreateDownloadEndEventArgs, options, _jsonContext.DownloadEndParams, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Subscription> OnDownloadEndAsync(Action<DownloadEndEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.downloadEnd", handler, options, _jsonContext.DownloadEndEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.downloadEnd", handler, CreateDownloadEndEventArgs, options, _jsonContext.DownloadEndParams, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Subscription> OnNavigationAbortedAsync(Func<NavigationEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Subscription> OnNavigationAbortedAsync(Func<NavigationAbortedEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.navigationAborted", handler, options, _jsonContext.NavigationEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.navigationAborted", handler, CreateNavigationAbortedEventArgs, options, _jsonContext.NavigationInfo, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Subscription> OnNavigationAbortedAsync(Action<NavigationEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Subscription> OnNavigationAbortedAsync(Action<NavigationAbortedEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.navigationAborted", handler, options, _jsonContext.NavigationEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.navigationAborted", handler, CreateNavigationAbortedEventArgs, options, _jsonContext.NavigationInfo, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Subscription> OnNavigationFailedAsync(Func<NavigationEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Subscription> OnNavigationFailedAsync(Func<NavigationFailedEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.navigationFailed", handler, options, _jsonContext.NavigationEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.navigationFailed", handler, CreateNavigationFailedEventArgs, options, _jsonContext.NavigationInfo, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Subscription> OnNavigationFailedAsync(Action<NavigationEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Subscription> OnNavigationFailedAsync(Action<NavigationFailedEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.navigationFailed", handler, options, _jsonContext.NavigationEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.navigationFailed", handler, CreateNavigationFailedEventArgs, options, _jsonContext.NavigationInfo, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Subscription> OnNavigationCommittedAsync(Func<NavigationEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Subscription> OnNavigationCommittedAsync(Func<NavigationCommittedEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.navigationCommitted", handler, options, _jsonContext.NavigationEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.navigationCommitted", handler, CreateNavigationCommittedEventArgs, options, _jsonContext.NavigationInfo, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Subscription> OnNavigationCommittedAsync(Action<NavigationEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Subscription> OnNavigationCommittedAsync(Action<NavigationCommittedEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.navigationCommitted", handler, options, _jsonContext.NavigationEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.navigationCommitted", handler, CreateNavigationCommittedEventArgs, options, _jsonContext.NavigationInfo, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Subscription> OnContextCreatedAsync(Func<BrowsingContextEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Subscription> OnContextCreatedAsync(Func<ContextCreatedEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.contextCreated", handler, options, _jsonContext.BrowsingContextEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.contextCreated", handler, CreateContextCreatedEventArgs, options, _jsonContext.Info, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Subscription> OnContextCreatedAsync(Action<BrowsingContextEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Subscription> OnContextCreatedAsync(Action<ContextCreatedEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.contextCreated", handler, options, _jsonContext.BrowsingContextEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.contextCreated", handler, CreateContextCreatedEventArgs, options, _jsonContext.Info, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Subscription> OnContextDestroyedAsync(Func<BrowsingContextEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Subscription> OnContextDestroyedAsync(Func<ContextDestroyedEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.contextDestroyed", handler, options, _jsonContext.BrowsingContextEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.contextDestroyed", handler, CreateContextDestroyedEventArgs, options, _jsonContext.Info, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Subscription> OnContextDestroyedAsync(Action<BrowsingContextEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Subscription> OnContextDestroyedAsync(Action<ContextDestroyedEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.contextDestroyed", handler, options, _jsonContext.BrowsingContextEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.contextDestroyed", handler, CreateContextDestroyedEventArgs, options, _jsonContext.Info, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Subscription> OnUserPromptOpenedAsync(Func<UserPromptOpenedEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.userPromptOpened", handler, options, _jsonContext.UserPromptOpenedEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.userPromptOpened", handler, CreateUserPromptOpenedEventArgs, options, _jsonContext.UserPromptOpenedParameters, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Subscription> OnUserPromptOpenedAsync(Action<UserPromptOpenedEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.userPromptOpened", handler, options, _jsonContext.UserPromptOpenedEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.userPromptOpened", handler, CreateUserPromptOpenedEventArgs, options, _jsonContext.UserPromptOpenedParameters, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Subscription> OnUserPromptClosedAsync(Func<UserPromptClosedEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.userPromptClosed", handler, options, _jsonContext.UserPromptClosedEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.userPromptClosed", handler, CreateUserPromptClosedEventArgs, options, _jsonContext.UserPromptClosedParameters, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Subscription> OnUserPromptClosedAsync(Action<UserPromptClosedEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("browsingContext.userPromptClosed", handler, options, _jsonContext.UserPromptClosedEventArgs, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("browsingContext.userPromptClosed", handler, CreateUserPromptClosedEventArgs, options, _jsonContext.UserPromptClosedParameters, cancellationToken).ConfigureAwait(false);
     }
+
+    private static NavigationStartedEventArgs CreateNavigationStartedEventArgs(IBiDi bidi, NavigationInfo p) => new(bidi, p.Context, p.Navigation, p.Timestamp, p.Url, p.UserContext);
+
+    private static FragmentNavigatedEventArgs CreateFragmentNavigatedEventArgs(IBiDi bidi, NavigationInfo p) => new(bidi, p.Context, p.Navigation, p.Timestamp, p.Url, p.UserContext);
+
+    private static DomContentLoadedEventArgs CreateDomContentLoadedEventArgs(IBiDi bidi, NavigationInfo p) => new(bidi, p.Context, p.Navigation, p.Timestamp, p.Url, p.UserContext);
+
+    private static LoadEventArgs CreateLoadEventArgs(IBiDi bidi, NavigationInfo p) => new(bidi, p.Context, p.Navigation, p.Timestamp, p.Url, p.UserContext);
+
+    private static NavigationAbortedEventArgs CreateNavigationAbortedEventArgs(IBiDi bidi, NavigationInfo p) => new(bidi, p.Context, p.Navigation, p.Timestamp, p.Url, p.UserContext);
+
+    private static NavigationFailedEventArgs CreateNavigationFailedEventArgs(IBiDi bidi, NavigationInfo p) => new(bidi, p.Context, p.Navigation, p.Timestamp, p.Url, p.UserContext);
+
+    private static NavigationCommittedEventArgs CreateNavigationCommittedEventArgs(IBiDi bidi, NavigationInfo p) => new(bidi, p.Context, p.Navigation, p.Timestamp, p.Url, p.UserContext);
+
+    private static HistoryUpdatedEventArgs CreateHistoryUpdatedEventArgs(IBiDi bidi, HistoryUpdatedParameters p) => new(bidi, p.Context, p.Timestamp, p.Url, p.UserContext);
+
+    private static DownloadWillBeginEventArgs CreateDownloadWillBeginEventArgs(IBiDi bidi, DownloadWillBeginParams p) => new(bidi, p.SuggestedFilename, p.Context, p.Navigation, p.Timestamp, p.Url);
+
+    private static DownloadEndEventArgs CreateDownloadEndEventArgs(IBiDi bidi, DownloadEndParams p) => p switch
+    {
+        DownloadCanceledParams c => new DownloadCanceledEventArgs(bidi, c.Context, c.Navigation, c.Timestamp, c.Url),
+        DownloadCompleteParams c => new DownloadCompleteEventArgs(bidi, c.Filepath, c.Context, c.Navigation, c.Timestamp, c.Url),
+        _ => throw new BiDiException($"Unknown {nameof(DownloadEndParams)} type: {p.GetType()}")
+    };
+
+    private static ContextCreatedEventArgs CreateContextCreatedEventArgs(IBiDi bidi, Info p) => new(bidi, p.Children, p.ClientWindow, p.Context, p.OriginalOpener, p.Url, p.UserContext, p.Parent);
+
+    private static ContextDestroyedEventArgs CreateContextDestroyedEventArgs(IBiDi bidi, Info p) => new(bidi, p.Children, p.ClientWindow, p.Context, p.OriginalOpener, p.Url, p.UserContext, p.Parent);
+
+    private static UserPromptOpenedEventArgs CreateUserPromptOpenedEventArgs(IBiDi bidi, UserPromptOpenedParameters p) => new(bidi, p.Context, p.Handler, p.Message, p.Type, p.UserContext, p.DefaultValue);
+
+    private static UserPromptClosedEventArgs CreateUserPromptClosedEventArgs(IBiDi bidi, UserPromptClosedParameters p) => new(bidi, p.Context, p.Accepted, p.Type, p.UserContext, p.UserText);
 
     protected override void Initialize(IBiDi bidi, JsonSerializerOptions jsonSerializerOptions)
     {
@@ -287,14 +320,13 @@ public sealed class BrowsingContextModule : Module, IBrowsingContextModule
 [JsonSerializable(typeof(TraverseHistoryCommand))]
 [JsonSerializable(typeof(TraverseHistoryResult))]
 
-[JsonSerializable(typeof(BrowsingContextEventArgs))]
-[JsonSerializable(typeof(DownloadWillBeginEventArgs))]
-[JsonSerializable(typeof(DownloadEndEventArgs))]
-[JsonSerializable(typeof(DownloadCanceledEventArgs))]
-[JsonSerializable(typeof(DownloadCompleteEventArgs))]
-[JsonSerializable(typeof(HistoryUpdatedEventArgs))]
-[JsonSerializable(typeof(NavigationEventArgs))]
-[JsonSerializable(typeof(UserPromptOpenedEventArgs))]
-[JsonSerializable(typeof(UserPromptClosedEventArgs))]
+[JsonSerializable(typeof(DownloadWillBeginParams))]
+[JsonSerializable(typeof(DownloadEndParams))]
+[JsonSerializable(typeof(DownloadCanceledParams))]
+[JsonSerializable(typeof(DownloadCompleteParams))]
+[JsonSerializable(typeof(HistoryUpdatedParameters))]
+[JsonSerializable(typeof(NavigationInfo))]
+[JsonSerializable(typeof(UserPromptClosedParameters))]
+[JsonSerializable(typeof(UserPromptOpenedParameters))]
 
 internal partial class BrowsingContextJsonSerializerContext : JsonSerializerContext;

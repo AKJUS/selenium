@@ -1,4 +1,4 @@
-// <copyright file="UserPromptOpenedEventArgs.cs" company="Selenium Committers">
+// <copyright file="Info.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -19,20 +19,11 @@
 
 namespace OpenQA.Selenium.BiDi.BrowsingContext;
 
-public sealed record UserPromptOpenedEventArgs(
-    IBiDi BiDi,
+public sealed record Info(
+    IReadOnlyList<Info>? Children,
+    Browser.ClientWindow ClientWindow,
     BrowsingContext Context,
-    Session.UserPromptHandlerType Handler,
-    string Message,
-    UserPromptType Type,
-    Browser.UserContext? UserContext,
-    string? DefaultValue)
-    : EventArgs(BiDi);
-
-internal sealed record UserPromptOpenedParameters(
-    BrowsingContext Context,
-    Session.UserPromptHandlerType Handler,
-    string Message,
-    UserPromptType Type,
-    Browser.UserContext? UserContext,
-    string? DefaultValue);
+    BrowsingContext? OriginalOpener,
+    string Url,
+    Browser.UserContext UserContext,
+    BrowsingContext? Parent);

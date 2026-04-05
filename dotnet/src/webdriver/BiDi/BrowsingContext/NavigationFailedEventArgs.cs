@@ -1,4 +1,4 @@
-// <copyright file="UserPromptOpenedEventArgs.cs" company="Selenium Committers">
+// <copyright file="NavigationFailedEventArgs.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -19,20 +19,5 @@
 
 namespace OpenQA.Selenium.BiDi.BrowsingContext;
 
-public sealed record UserPromptOpenedEventArgs(
-    IBiDi BiDi,
-    BrowsingContext Context,
-    Session.UserPromptHandlerType Handler,
-    string Message,
-    UserPromptType Type,
-    Browser.UserContext? UserContext,
-    string? DefaultValue)
-    : EventArgs(BiDi);
-
-internal sealed record UserPromptOpenedParameters(
-    BrowsingContext Context,
-    Session.UserPromptHandlerType Handler,
-    string Message,
-    UserPromptType Type,
-    Browser.UserContext? UserContext,
-    string? DefaultValue);
+public sealed record NavigationFailedEventArgs(IBiDi BiDi, BrowsingContext Context, Navigation? Navigation, DateTimeOffset Timestamp, string Url, Browser.UserContext? UserContext)
+    : NavigationEventArgs(BiDi, Context, Navigation, Timestamp, Url, UserContext);
