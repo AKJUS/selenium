@@ -33,7 +33,7 @@ jobs:
     uses: ./.github/workflows/bazel.yml
     with:
       name: Update Rust Version
-      run: ./go rust:version ${{ needs.parse-tag.outputs.version }}
+      run: ./go rust:version ${{ needs.parse-tag.outputs.version }} && ./go rust:update
       artifact-name: rust-version
 
   push-rust-version:
@@ -153,7 +153,7 @@ jobs:
 
   calculate-changelog-depth:
     name: Calculate Changelog Depth
-    needs: [parse-tag, commit-versions, commit-devtools]
+    needs: [parse-tag, commit-versions, commit-devtools, update-dependencies]
     if: >-
       always() &&
       needs.commit-versions.result == 'success' &&
