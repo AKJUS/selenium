@@ -213,11 +213,11 @@ task :release do |_task, arguments|
   Rake::Task['java:build'].invoke('--config=release')
 
   puts "Releasing Java artifacts to Maven repository at '#{ENV.fetch('MAVEN_REPO', nil)}'"
-  java_release_targets.each { |target| Bazel.execute('run', ['--config=release'], target) }
+  #java_release_targets.each { |target| Bazel.execute('run', ['--config=release'], target) }
 
   next if nightly
 
-  trigger_sonatype_publish(token)
+  #trigger_sonatype_publish(token)
 end
 
 desc 'Verify Java packages are published on Maven Central'

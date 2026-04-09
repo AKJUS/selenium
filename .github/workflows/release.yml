@@ -62,17 +62,21 @@ jobs:
   publish:
     name: Build and Publish ${{ matrix.language }}
     needs: [parse-tag, get-approval]
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
-        language: [java, python, ruby, dotnet, javascript]
+        language: [java, ruby, dotnet]
     uses: ./.github/workflows/bazel.yml
     with:
       name: Publish ${{ matrix.language }}
       gpg-sign: ${{ matrix.language == 'java' }}
+      gem-trusted-publishing: ${{ matrix.language == 'ruby' }}
       run: ${{ (needs.parse-tag.outputs.language == 'all' || needs.parse-tag.outputs.language == matrix.language) && format('./go {0}:release', matrix.language) || 'echo skipping' }}
       artifact-name: ${{ (needs.parse-tag.outputs.language == 'all' || needs.parse-tag.outputs.language == matrix.language) && format('release-packages-{0}', matrix.language) || '' }}
-      artifact-path: build/dist/*.*
+      artifact-path: ${{ (matrix.language == 'java' || matrix.language == 'dotnet') && 'build/dist/*.*' || '' }}
     secrets: inherit
 
   github-release:

@@ -76,6 +76,11 @@ on:
         required: false
         type: string
         default: ''
+      gem-trusted-publishing:
+        description: Exchange GitHub OIDC token for a RubyGems API token (requires trusted publisher configured on rubygems.org)
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   bazel:
@@ -225,6 +230,9 @@ jobs:
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
+      - name: Configure RubyGems credentials via OIDC
+        if: inputs.gem-trusted-publishing
+        uses: rubygems/configure-rubygems-credentials@v1
       - name: Run Bazel
         shell: bash
         env:
