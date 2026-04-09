@@ -101,6 +101,7 @@ jobs:
         with:
           pattern: release-packages-*
           merge-multiple: true
+          path: "build/dist/"
       - name: Download release packages
         if: needs.parse-tag.outputs.language != 'all'
         uses: actions/download-artifact@v4
