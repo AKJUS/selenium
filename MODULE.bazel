@@ -17,8 +17,7 @@ bazel_dep(name = "platforms", version = "1.0.0")
 bazel_dep(name = "protobuf", version = "33.5")
 
 # Required for rules_rust to import the crates properly
-bazel_dep(name = "rules_cc", version = "0.2.17", dev_dependency = True)
-
+bazel_dep(name = "rules_cc", dev_dependency = True, version = "0.2.17")
 bazel_dep(name = "rules_android", version = "0.7.1")
 bazel_dep(name = "rules_closure", version = "0.15.0")
 bazel_dep(name = "rules_dotnet", version = "0.21.5")
@@ -39,7 +38,10 @@ bazel_dep(name = "rules_rust", version = "0.69.0")
 single_version_override(
     module_name = "rules_jvm_external",
     patch_strip = 1,
-    patches = ["//third_party/bazel:rules_jvm_external_javadoc.patch"],
+    patches = [
+        "//third_party/bazel:rules_jvm_external_javadoc.patch",
+        "//third_party/bazel:rules_jvm_external_maven_publisher.patch",
+    ],
 )
 
 # aspect_rules_jest 0.25.2 does not declare bazel_lib 3.x as a dep
@@ -53,21 +55,27 @@ single_version_override(
 )
 
 multitool = use_extension("@rules_multitool//multitool:extension.bzl", "multitool")
+
 multitool.hub(lockfile = "//:multitool.lock.json")
+
 use_repo(multitool, "multitool")
 
 linter = use_extension("@apple_rules_lint//lint:extensions.bzl", "linter")
+
 linter.configure(
     name = "java-spotbugs",
     config = "//java:spotbugs-config",
 )
+
 linter.configure(
     name = "rust-rustfmt",
     config = "//rust:enable-rustfmt",
 )
+
 linter.register(name = "rust-rustfmt")
 
 node = use_extension("@rules_nodejs//nodejs:extensions.bzl", "node")
+
 node.toolchain(node_version = "20.9.0")
 
 pnpm = use_extension(
@@ -75,9 +83,11 @@ pnpm = use_extension(
     "pnpm",
     dev_dependency = True,
 )
+
 use_repo(pnpm, "pnpm")
 
 npm = use_extension("@aspect_rules_js//npm:extensions.bzl", "npm")
+
 npm.npm_translate_lock(
     name = "npm",
     data = [
@@ -92,6 +102,7 @@ npm.npm_translate_lock(
     pnpm_lock = "//:pnpm-lock.yaml",
     verify_node_modules_ignored = "//:.bazelignore",
 )
+
 use_repo(npm, "npm")
 
 rules_ts_ext = use_extension(
@@ -99,38 +110,52 @@ rules_ts_ext = use_extension(
     "ext",
     dev_dependency = True,
 )
+
 rules_ts_ext.deps(
     ts_version = "4.9.5",
 )
+
 use_repo(rules_ts_ext, "npm_typescript")
 
 esbuild = use_extension("@aspect_rules_esbuild//esbuild:extensions.bzl", "esbuild")
+
 esbuild.toolchain(esbuild_version = "0.23.0")
+
 use_repo(esbuild, "esbuild_toolchains")
 
 register_toolchains("@esbuild_toolchains//:all")
 
 dotnet = use_extension("@rules_dotnet//dotnet:extensions.bzl", "dotnet")
+
 dotnet.toolchain(dotnet_version = "10.0.100")
+
 use_repo(dotnet, "dotnet_toolchains")
 
 selenium_paket = use_extension("//dotnet:paket.nuget_extension.bzl", "nuget_extension")
+
 use_repo(selenium_paket, "paket.nuget")
 
 docfx_ext = use_extension("//dotnet/private:docfx_repo.bzl", "docfx_extension")
+
 use_repo(docfx_ext, "docfx")
 
 register_toolchains("@dotnet_toolchains//:all")
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+
 python.toolchain(
     is_default = True,
     python_version = "3.10.19",
 )
+
 python.toolchain(python_version = "3.11.14")
+
 python.toolchain(python_version = "3.12.12")
+
 python.toolchain(python_version = "3.13.11")
+
 python.toolchain(python_version = "3.14.2")
+
 use_repo(python, "pythons_hub")
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
@@ -155,6 +180,7 @@ use_repo(pip, "py_dev_requirements")
 register_toolchains("@pythons_hub//:all")
 
 java_toolchains = use_extension("@rules_java//java:extensions.bzl", "toolchains")
+
 use_repo(
     java_toolchains,
     "remote_java_tools",
@@ -171,6 +197,7 @@ use_repo(
 )
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+
 maven.install(
     name = "maven",
     artifacts = [
@@ -267,9 +294,11 @@ maven.install(
     resolver = "maven",
     strict_visibility = True,
 )
+
 use_repo(maven, "maven", "unpinned_maven")
 
 ruby = use_extension("@rules_ruby//ruby:extensions.bzl", "ruby")
+
 ruby.toolchain(
     name = "ruby",
     msys2_packages = [
@@ -279,6 +308,7 @@ ruby.toolchain(
     portable_ruby = True,
     version_file = "//:rb/.ruby-version",
 )
+
 ruby.bundle_fetch(
     name = "bundle",
     srcs = [
@@ -379,23 +409,28 @@ ruby.bundle_fetch(
         "org.snakeyaml:snakeyaml-engine:2.10": "c99d9fd66c7c251d881a9cd95089b7c8044c29a1b02983d7036981bd4354ec37",
     },
 )
+
 use_repo(ruby, "bundle", "ruby", "ruby_toolchains")
 
 register_toolchains("@ruby_toolchains//:all")
 
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+
 rust.toolchain(versions = ["1.89.0"])
 
 crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
+
 crate.from_cargo(
     name = "crates",
     cargo_lockfile = "//rust:Cargo.lock",
     lockfile = "//rust:Cargo.Bazel.lock",
     manifests = ["//rust:Cargo.toml"],
 )
+
 use_repo(crate, "crates")
 
 selenium_manager_artifacts = use_extension("//common:selenium_manager.bzl", "selenium_manager_artifacts")
+
 use_repo(
     selenium_manager_artifacts,
     "download_sm_linux",
@@ -404,6 +439,7 @@ use_repo(
 )
 
 pin_browsers_extension = use_extension("//common:repositories.bzl", "pin_browsers_extension")
+
 use_repo(
     pin_browsers_extension,
     "linux_beta_chrome",
