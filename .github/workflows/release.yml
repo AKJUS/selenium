@@ -68,7 +68,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [java, ruby, dotnet]
+        language: [java, ruby, dotnet, javascript, python]
     uses: ./.github/workflows/bazel.yml
     with:
       name: Publish ${{ matrix.language }}
@@ -148,6 +148,7 @@ jobs:
       contents: write
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         language: [java, python, ruby, dotnet, javascript]
     uses: ./.github/workflows/update-documentation.yml

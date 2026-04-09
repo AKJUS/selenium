@@ -25,7 +25,6 @@ jobs:
     with:
       tag: ${{ inputs.tag }}
 
-  # Do not need to lock trunk before Rust jobs since work is in a separate branch
   generate-rust-version:
     name: Generate Rust Version
     needs: [parse-tag, restrict-trunk]

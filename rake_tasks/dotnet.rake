@@ -52,7 +52,7 @@ task :release do |_task, arguments|
   Rake::Task['dotnet:package'].invoke('--config=release')
 
   puts "Pushing .NET packages to #{ENV.fetch('NUGET_SOURCE', nil)}..."
-  #Bazel.execute('run', ['--config=release'], '//dotnet:publish')
+  Bazel.execute('run', ['--config=release'], '//dotnet:publish')
 end
 
 desc 'Verify .NET packages are published on NuGet'
