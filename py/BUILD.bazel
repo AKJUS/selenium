@@ -70,10 +70,10 @@ compile_pip_requirements(
     ],
 )
 
-SE_VERSION = "4.42.0.202602192150"
+SE_VERSION = "4.42.0"
 
 BROWSER_VERSIONS = [
-    "v143",
+    "v146",
     "v144",
     "v145",
 ]
