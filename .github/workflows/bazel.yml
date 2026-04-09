@@ -232,7 +232,7 @@ jobs:
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
       - name: Configure RubyGems credentials via OIDC
         if: inputs.gem-trusted-publishing
-        uses: rubygems/configure-rubygems-credentials@v1
+        uses: rubygems/configure-rubygems-credentials@main
       - name: Run Bazel
         shell: bash
         env:
