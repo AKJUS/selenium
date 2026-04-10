@@ -18,31 +18,36 @@
 // </copyright>
 
 using System.Text.Json.Serialization;
+using static OpenQA.Selenium.BiDi.WebExtension.WebExtensionJsonSerializerContext;
 
 namespace OpenQA.Selenium.BiDi.WebExtension;
 
-public sealed class WebExtensionModule : Module, IWebExtensionModule
+internal sealed class WebExtensionModule : Module, IWebExtensionModule
 {
-    private static readonly WebExtensionJsonSerializerContext JsonContext = WebExtensionJsonSerializerContext.Default;
+    private static readonly Command<InstallParameters, InstallResult> InstallCommand = new(
+        "webExtension.install", Default.InstallParameters, Default.InstallResult);
+
+    private static readonly Command<UninstallParameters, UninstallResult> UninstallCommand = new(
+        "webExtension.uninstall", Default.UninstallParameters, Default.UninstallResult);
 
     public async Task<InstallResult> InstallAsync(ExtensionData extensionData, InstallOptions? options = null, CancellationToken cancellationToken = default)
     {
         var @params = new InstallParameters(extensionData);
 
-        return await ExecuteCommandAsync(new InstallCommand(@params), options, JsonContext.InstallCommand, JsonContext.InstallResult, cancellationToken).ConfigureAwait(false);
+        return await ExecuteAsync(InstallCommand, @params, options, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<UninstallResult> UninstallAsync(Extension extension, UninstallOptions? options = null, CancellationToken cancellationToken = default)
     {
         var @params = new UninstallParameters(extension);
 
-        return await ExecuteCommandAsync(new UninstallCommand(@params), options, JsonContext.UninstallCommand, JsonContext.UninstallResult, cancellationToken).ConfigureAwait(false);
+        return await ExecuteAsync(UninstallCommand, @params, options, cancellationToken).ConfigureAwait(false);
     }
 }
 
-[JsonSerializable(typeof(InstallCommand))]
+[JsonSerializable(typeof(InstallParameters))]
 [JsonSerializable(typeof(InstallResult))]
-[JsonSerializable(typeof(UninstallCommand))]
+[JsonSerializable(typeof(UninstallParameters))]
 [JsonSerializable(typeof(UninstallResult))]
 
 [JsonSourceGenerationOptions(

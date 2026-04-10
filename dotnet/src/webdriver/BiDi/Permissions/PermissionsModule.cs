@@ -18,22 +18,24 @@
 // </copyright>
 
 using System.Text.Json.Serialization;
+using static OpenQA.Selenium.BiDi.Permissions.PermissionsJsonSerializerContext;
 
 namespace OpenQA.Selenium.BiDi.Permissions;
 
-public sealed class PermissionsModule : Module, IPermissionsModule
+internal sealed class PermissionsModule : Module, IPermissionsModule
 {
-    private static readonly PermissionsJsonSerializerContext JsonContext = PermissionsJsonSerializerContext.Default;
+    private static readonly Command<SetPermissionCommandParameters, SetPermissionResult> SetPermissionCommand = new(
+        "permissions.setPermission", Default.SetPermissionCommandParameters, Default.SetPermissionResult);
 
     public async Task<SetPermissionResult> SetPermissionAsync(PermissionDescriptor descriptor, PermissionState state, string origin, SetPermissionOptions? options = null, CancellationToken cancellationToken = default)
     {
         var @params = new SetPermissionCommandParameters(descriptor, state, origin, options?.EmbeddedOrigin, options?.UserContext);
 
-        return await ExecuteCommandAsync(new SetPermissionCommand(@params), options, JsonContext.SetPermissionCommand, JsonContext.SetPermissionResult, cancellationToken).ConfigureAwait(false);
+        return await ExecuteAsync(SetPermissionCommand, @params, options, cancellationToken).ConfigureAwait(false);
     }
 }
 
-[JsonSerializable(typeof(SetPermissionCommand))]
+[JsonSerializable(typeof(SetPermissionCommandParameters))]
 [JsonSerializable(typeof(SetPermissionResult))]
 
 [JsonSourceGenerationOptions(

@@ -18,54 +18,67 @@
 // </copyright>
 
 using System.Text.Json.Serialization;
+using static OpenQA.Selenium.BiDi.Session.SessionJsonSerializerContext;
 
 namespace OpenQA.Selenium.BiDi.Session;
 
 internal sealed class SessionModule : Module, ISessionModule
 {
-    private static readonly SessionJsonSerializerContext JsonContext = SessionJsonSerializerContext.Default;
+    private static readonly Command<Parameters, StatusResult> StatusCommand = new(
+        "session.status", Default.Parameters, Default.StatusResult);
+
+    private static readonly Command<NewParameters, NewResult> NewCommand = new(
+        "session.new", Default.NewParameters, Default.NewResult);
+
+    private static readonly Command<Parameters, EndResult> EndCommand = new(
+        "session.end", Default.Parameters, Default.EndResult);
+
+    private static readonly Command<SubscribeParameters, SubscribeResult> SubscribeCommand = new(
+        "session.subscribe", Default.SubscribeParameters, Default.SubscribeResult);
+
+    private static readonly Command<UnsubscribeByIdParameters, UnsubscribeResult> UnsubscribeByIdCommand = new(
+        "session.unsubscribe", Default.UnsubscribeByIdParameters, Default.UnsubscribeResult);
 
     public async Task<StatusResult> StatusAsync(StatusOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await ExecuteCommandAsync(new StatusCommand(), options, JsonContext.StatusCommand, JsonContext.StatusResult, cancellationToken).ConfigureAwait(false);
+        return await ExecuteAsync(StatusCommand, Parameters.Empty, options, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<SubscribeResult> SubscribeAsync(IEnumerable<string> events, SubscribeOptions? options = null, CancellationToken cancellationToken = default)
     {
         var @params = new SubscribeParameters(events, options?.Contexts);
 
-        return await ExecuteCommandAsync(new(@params), options, JsonContext.SubscribeCommand, JsonContext.SubscribeResult, cancellationToken).ConfigureAwait(false);
+        return await ExecuteAsync(SubscribeCommand, @params, options, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<UnsubscribeResult> UnsubscribeAsync(IEnumerable<Subscription> subscriptions, UnsubscribeByIdOptions? options = null, CancellationToken cancellationToken = default)
     {
         var @params = new UnsubscribeByIdParameters(subscriptions);
 
-        return await ExecuteCommandAsync(new UnsubscribeByIdCommand(@params), options, JsonContext.UnsubscribeByIdCommand, JsonContext.UnsubscribeResult, cancellationToken).ConfigureAwait(false);
+        return await ExecuteAsync(UnsubscribeByIdCommand, @params, options, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<NewResult> NewAsync(CapabilitiesRequest capabilities, NewOptions? options = null, CancellationToken cancellationToken = default)
     {
         var @params = new NewParameters(capabilities);
 
-        return await ExecuteCommandAsync(new NewCommand(@params), options, JsonContext.NewCommand, JsonContext.NewResult, cancellationToken).ConfigureAwait(false);
+        return await ExecuteAsync(NewCommand, @params, options, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<EndResult> EndAsync(EndOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await ExecuteCommandAsync(new EndCommand(), options, JsonContext.EndCommand, JsonContext.EndResult, cancellationToken).ConfigureAwait(false);
+        return await ExecuteAsync(EndCommand, Parameters.Empty, options, cancellationToken).ConfigureAwait(false);
     }
 }
 
-[JsonSerializable(typeof(StatusCommand))]
+[JsonSerializable(typeof(Parameters))]
 [JsonSerializable(typeof(StatusResult))]
-[JsonSerializable(typeof(NewCommand))]
+[JsonSerializable(typeof(NewParameters))]
 [JsonSerializable(typeof(NewResult))]
-[JsonSerializable(typeof(EndCommand))]
 [JsonSerializable(typeof(EndResult))]
-[JsonSerializable(typeof(SubscribeCommand))]
+[JsonSerializable(typeof(SubscribeParameters))]
 [JsonSerializable(typeof(SubscribeResult))]
-[JsonSerializable(typeof(UnsubscribeByIdCommand))]
+[JsonSerializable(typeof(UnsubscribeByIdParameters))]
 [JsonSerializable(typeof(UnsubscribeResult))]
 
 [JsonSourceGenerationOptions(

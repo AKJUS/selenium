@@ -114,8 +114,8 @@ internal sealed class Broker : IAsyncDisposable
         _eventDispatcher.RemoveHandler(subscription.EventName, subscription.Handler);
     }
 
-    public async Task<TResult> ExecuteCommandAsync<TCommand, TResult>(TCommand command, CommandOptions? options, JsonTypeInfo<TCommand> jsonCommandTypeInfo, JsonTypeInfo<TResult> jsonResultTypeInfo, CancellationToken cancellationToken)
-        where TCommand : Command
+    public async Task<TResult> ExecuteAsync<TParameters, TResult>(Command<TParameters, TResult> descriptor, TParameters @params, CommandOptions? options, CancellationToken cancellationToken)
+        where TParameters : Parameters
         where TResult : EmptyResult
     {
         if (_terminalReceiveException is { } terminalException)
@@ -123,7 +123,7 @@ internal sealed class Broker : IAsyncDisposable
             throw new BiDiException("The broker is no longer processing messages due to a transport error.", terminalException);
         }
 
-        command.Id = Interlocked.Increment(ref _currentCommandId);
+        var id = Interlocked.Increment(ref _currentCommandId);
 
         var tcs = new TaskCompletionSource<EmptyResult>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -141,7 +141,12 @@ internal sealed class Broker : IAsyncDisposable
             using (BiDiContext.Use(_bidi))
             using (var writer = new Utf8JsonWriter(sendBuffer))
             {
-                JsonSerializer.Serialize(writer, command, jsonCommandTypeInfo);
+                writer.WriteStartObject();
+                writer.WriteNumber("id"u8, id);
+                writer.WriteString("method"u8, descriptor.Method);
+                writer.WritePropertyName("params"u8);
+                JsonSerializer.Serialize(writer, @params, descriptor.ParamsTypeInfo);
+                writer.WriteEndObject();
             }
         }
         catch
@@ -150,13 +155,13 @@ internal sealed class Broker : IAsyncDisposable
             throw;
         }
 
-        var commandInfo = new CommandInfo(tcs, jsonResultTypeInfo);
-        _pendingCommands[command.Id] = commandInfo;
+        var commandInfo = new CommandInfo(tcs, descriptor.ResultTypeInfo);
+        _pendingCommands[id] = commandInfo;
 
         using var ctsRegistration = cts.Token.Register(() =>
         {
             tcs.TrySetCanceled(cts.Token);
-            _pendingCommands.TryRemove(command.Id, out _);
+            _pendingCommands.TryRemove(id, out _);
         });
 
         try
@@ -174,7 +179,7 @@ internal sealed class Broker : IAsyncDisposable
         }
         catch
         {
-            _pendingCommands.TryRemove(command.Id, out _);
+            _pendingCommands.TryRemove(id, out _);
             throw;
         }
         finally
@@ -290,7 +295,7 @@ internal sealed class Broker : IAsyncDisposable
             case TypeSuccess:
                 if (id is null) throw new BiDiException("The remote end responded with 'success' message type, but missed required 'id' property.");
 
-                if (_pendingCommands.TryGetValue(id.Value, out var command))
+                if (_pendingCommands.TryRemove(id.Value, out var command))
                 {
                     try
                     {
@@ -302,10 +307,6 @@ internal sealed class Broker : IAsyncDisposable
                     catch (Exception ex)
                     {
                         command.TaskCompletionSource.TrySetException(ex);
-                    }
-                    finally
-                    {
-                        _pendingCommands.TryRemove(id.Value, out _);
                     }
                 }
                 else
@@ -342,10 +343,9 @@ internal sealed class Broker : IAsyncDisposable
             case TypeError:
                 if (id is null) throw new BiDiException($"The remote end responded with 'error' message type, but missed required 'id' property. Message content: {System.Text.Encoding.UTF8.GetString(data.ToArray())}");
 
-                if (_pendingCommands.TryGetValue(id.Value, out var errorCommand))
+                if (_pendingCommands.TryRemove(id.Value, out var errorCommand))
                 {
                     errorCommand.TaskCompletionSource.TrySetException(new BiDiException($"{error}: {message}"));
-                    _pendingCommands.TryRemove(id.Value, out _);
                 }
                 else
                 {

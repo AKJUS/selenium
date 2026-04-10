@@ -18,42 +18,50 @@
 // </copyright>
 
 using System.Text.Json.Serialization;
+using static OpenQA.Selenium.BiDi.Input.InputJsonSerializerContext;
 
 namespace OpenQA.Selenium.BiDi.Input;
 
-public sealed class InputModule : Module, IInputModule
+internal sealed class InputModule : Module, IInputModule
 {
-    private static readonly InputJsonSerializerContext JsonContext = InputJsonSerializerContext.Default;
+    private static readonly Command<PerformActionsParameters, PerformActionsResult> PerformActionsCommand = new(
+        "input.performActions", Default.PerformActionsParameters, Default.PerformActionsResult);
+
+    private static readonly Command<ReleaseActionsParameters, ReleaseActionsResult> ReleaseActionsCommand = new(
+        "input.releaseActions", Default.ReleaseActionsParameters, Default.ReleaseActionsResult);
+
+    private static readonly Command<SetFilesParameters, SetFilesResult> SetFilesCommand = new(
+        "input.setFiles", Default.SetFilesParameters, Default.SetFilesResult);
 
     public async Task<PerformActionsResult> PerformActionsAsync(BrowsingContext.BrowsingContext context, IEnumerable<SourceActions> actions, PerformActionsOptions? options = null, CancellationToken cancellationToken = default)
     {
         var @params = new PerformActionsParameters(context, actions);
 
-        return await ExecuteCommandAsync(new PerformActionsCommand(@params), options, JsonContext.PerformActionsCommand, JsonContext.PerformActionsResult, cancellationToken).ConfigureAwait(false);
+        return await ExecuteAsync(PerformActionsCommand, @params, options, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<ReleaseActionsResult> ReleaseActionsAsync(BrowsingContext.BrowsingContext context, ReleaseActionsOptions? options = null, CancellationToken cancellationToken = default)
     {
         var @params = new ReleaseActionsParameters(context);
 
-        return await ExecuteCommandAsync(new ReleaseActionsCommand(@params), options, JsonContext.ReleaseActionsCommand, JsonContext.ReleaseActionsResult, cancellationToken).ConfigureAwait(false);
+        return await ExecuteAsync(ReleaseActionsCommand, @params, options, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<SetFilesResult> SetFilesAsync(BrowsingContext.BrowsingContext context, Script.ISharedReference element, IEnumerable<string> files, SetFilesOptions? options = null, CancellationToken cancellationToken = default)
     {
         var @params = new SetFilesParameters(context, element, files);
 
-        return await ExecuteCommandAsync(new SetFilesCommand(@params), options, JsonContext.SetFilesCommand, JsonContext.SetFilesResult, cancellationToken).ConfigureAwait(false);
+        return await ExecuteAsync(SetFilesCommand, @params, options, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Subscription> OnFileDialogOpenedAsync(Func<FileDialogOpenedEventArgs, Task> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("input.fileDialogOpened", handler, CreateFileDialogOpenedEventArgs, options, JsonContext.FileDialogInfo, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("input.fileDialogOpened", handler, CreateFileDialogOpenedEventArgs, options, Default.FileDialogInfo, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Subscription> OnFileDialogOpenedAsync(Action<FileDialogOpenedEventArgs> handler, SubscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await SubscribeAsync("input.fileDialogOpened", handler, CreateFileDialogOpenedEventArgs, options, JsonContext.FileDialogInfo, cancellationToken).ConfigureAwait(false);
+        return await SubscribeAsync("input.fileDialogOpened", handler, CreateFileDialogOpenedEventArgs, options, Default.FileDialogInfo, cancellationToken).ConfigureAwait(false);
     }
 
     private static FileDialogOpenedEventArgs CreateFileDialogOpenedEventArgs(IBiDi bidi, FileDialogInfo p)
@@ -62,11 +70,11 @@ public sealed class InputModule : Module, IInputModule
     }
 }
 
-[JsonSerializable(typeof(PerformActionsCommand))]
+[JsonSerializable(typeof(PerformActionsParameters))]
 [JsonSerializable(typeof(PerformActionsResult))]
-[JsonSerializable(typeof(ReleaseActionsCommand))]
+[JsonSerializable(typeof(ReleaseActionsParameters))]
 [JsonSerializable(typeof(ReleaseActionsResult))]
-[JsonSerializable(typeof(SetFilesCommand))]
+[JsonSerializable(typeof(SetFilesParameters))]
 [JsonSerializable(typeof(SetFilesResult))]
 
 [JsonSerializable(typeof(FileDialogInfo))]
