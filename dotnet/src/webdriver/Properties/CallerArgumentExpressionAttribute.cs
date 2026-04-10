@@ -1,4 +1,4 @@
-// <copyright file="SpeculationBiDiExtensions.cs" company="Selenium Committers">
+// <copyright file="CallerArgumentExpressionAttribute.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,14 +17,13 @@
 // under the License.
 // </copyright>
 
-namespace OpenQA.Selenium.BiDi.Speculation;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace System.Runtime.CompilerServices;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
-public static class SpeculationBiDiExtensions
+#if !NET8_0_OR_GREATER
+internal class CallerArgumentExpressionAttribute(string paramName) : Attribute
 {
-    public static ISpeculationModule AsSpeculation(this IBiDi bidi)
-    {
-        ArgumentNullException.ThrowIfNull(bidi);
-
-        return bidi.AsModule<SpeculationModule>();
-    }
+    public string ParamName = paramName;
 }
+#endif

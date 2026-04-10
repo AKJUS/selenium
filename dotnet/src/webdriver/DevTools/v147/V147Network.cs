@@ -39,8 +39,10 @@ public class V147Network : DevTools.Network
     /// <exception cref="ArgumentNullException">If <paramref name="network"/> or <paramref name="fetch"/> are <see langword="null"/>.</exception>
     public V147Network(NetworkAdapter network, FetchAdapter fetch)
     {
-        this.network = network ?? throw new ArgumentNullException(nameof(network));
-        this.fetch = fetch ?? throw new ArgumentNullException(nameof(fetch));
+        ArgumentNullException.ThrowIfNull(network);
+        ArgumentNullException.ThrowIfNull(fetch);
+        this.network = network;
+        this.fetch = fetch;
         fetch.AuthRequired += OnFetchAuthRequired;
         fetch.RequestPaused += OnFetchRequestPaused;
     }
@@ -115,10 +117,7 @@ public class V147Network : DevTools.Network
     /// <exception cref="ArgumentNullException">If <paramref name="userAgent"/> is null.</exception>
     public override async Task SetUserAgentOverride(UserAgent userAgent)
     {
-        if (userAgent is null)
-        {
-            throw new ArgumentNullException(nameof(userAgent));
-        }
+        ArgumentNullException.ThrowIfNull(userAgent);
 
         await network.SetUserAgentOverride(new SetUserAgentOverrideCommandSettings()
         {
@@ -136,10 +135,7 @@ public class V147Network : DevTools.Network
     /// <exception cref="ArgumentNullException">If <paramref name="requestData"/> is <see langword="null"/>.</exception>
     public override async Task ContinueRequest(HttpRequestData requestData)
     {
-        if (requestData is null)
-        {
-            throw new ArgumentNullException(nameof(requestData));
-        }
+        ArgumentNullException.ThrowIfNull(requestData);
 
         var commandSettings = new ContinueRequestCommandSettings()
         {
@@ -176,15 +172,9 @@ public class V147Network : DevTools.Network
     /// <exception cref="ArgumentNullException">If <paramref name="requestData"/> or <paramref name="responseData"/> are <see langword="null"/>.</exception>
     public override async Task ContinueRequestWithResponse(HttpRequestData requestData, HttpResponseData responseData)
     {
-        if (requestData is null)
-        {
-            throw new ArgumentNullException(nameof(requestData));
-        }
+        ArgumentNullException.ThrowIfNull(requestData);
 
-        if (responseData is null)
-        {
-            throw new ArgumentNullException(nameof(responseData));
-        }
+        ArgumentNullException.ThrowIfNull(responseData);
 
         var commandSettings = new FulfillRequestCommandSettings()
         {
@@ -224,10 +214,7 @@ public class V147Network : DevTools.Network
     /// <exception cref="ArgumentNullException">If <paramref name="requestData"/> is <see langword="null"/>.</exception>
     public override async Task ContinueRequestWithoutModification(HttpRequestData requestData)
     {
-        if (requestData is null)
-        {
-            throw new ArgumentNullException(nameof(requestData));
-        }
+        ArgumentNullException.ThrowIfNull(requestData);
 
         await fetch.ContinueRequest(new ContinueRequestCommandSettings() { RequestId = requestData.RequestId }).ConfigureAwait(false);
     }
@@ -278,10 +265,7 @@ public class V147Network : DevTools.Network
     /// <exception cref="ArgumentNullException">If <paramref name="responseData"/> is <see langword="null"/>.</exception>
     public override async Task AddResponseBody(HttpResponseData responseData)
     {
-        if (responseData is null)
-        {
-            throw new ArgumentNullException(nameof(responseData));
-        }
+        ArgumentNullException.ThrowIfNull(responseData);
 
         // If the response is a redirect, retrieving the body will throw an error in CDP.
         if (responseData.StatusCode < 300 || responseData.StatusCode > 399)
@@ -309,10 +293,7 @@ public class V147Network : DevTools.Network
     /// <exception cref="ArgumentNullException">If <paramref name="responseData"/> is <see langword="null"/>.</exception>
     public override async Task ContinueResponseWithoutModification(HttpResponseData responseData)
     {
-        if (responseData is null)
-        {
-            throw new ArgumentNullException(nameof(responseData));
-        }
+        ArgumentNullException.ThrowIfNull(responseData);
 
         await fetch.ContinueResponse(new ContinueResponseCommandSettings() { RequestId = responseData.RequestId }).ConfigureAwait(false);
     }
