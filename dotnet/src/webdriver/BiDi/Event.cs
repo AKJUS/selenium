@@ -1,4 +1,4 @@
-// <copyright file="EventArgs.cs" company="Selenium Committers">
+// <copyright file="Event.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,6 +17,14 @@
 // under the License.
 // </copyright>
 
+using System.Text.Json.Serialization.Metadata;
+
 namespace OpenQA.Selenium.BiDi;
+
+public readonly record struct Event<TEventArgs, TEventParams>(
+    string Name,
+    Func<IBiDi, TEventParams, TEventArgs> Factory,
+    JsonTypeInfo<TEventParams> JsonTypeInfo)
+    where TEventArgs : EventArgs;
 
 public abstract record EventArgs(IBiDi BiDi);

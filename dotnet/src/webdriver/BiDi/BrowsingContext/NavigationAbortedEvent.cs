@@ -1,4 +1,4 @@
-// <copyright file="DownloadWillBeginEventArgs.cs" company="Selenium Committers">
+// <copyright file="NavigationAbortedEvent.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,24 +17,7 @@
 // under the License.
 // </copyright>
 
-using System.Text.Json.Serialization;
-using OpenQA.Selenium.BiDi.Json.Converters;
-
 namespace OpenQA.Selenium.BiDi.BrowsingContext;
 
-public sealed record DownloadWillBeginEventArgs(
-    IBiDi BiDi,
-    string SuggestedFilename,
-    BrowsingContext Context,
-    Navigation? Navigation,
-    DateTimeOffset Timestamp,
-    string Url)
-    : EventArgs(BiDi), IBaseNavigationInfo;
-
-internal sealed record DownloadWillBeginParams(
-    string SuggestedFilename,
-    BrowsingContext Context,
-    Navigation? Navigation,
-    [property: JsonConverter(typeof(DateTimeOffsetConverter))] DateTimeOffset Timestamp,
-    string Url)
-    : IBaseNavigationInfo;
+public sealed record NavigationAbortedEventArgs(IBiDi BiDi, BrowsingContext Context, Navigation? Navigation, DateTimeOffset Timestamp, string Url, Browser.UserContext? UserContext)
+    : NavigationEventArgs(BiDi, Context, Navigation, Timestamp, Url, UserContext);

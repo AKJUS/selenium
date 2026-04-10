@@ -1,4 +1,4 @@
-// <copyright file="PrefetchStatusUpdatedEventArgs.cs" company="Selenium Committers">
+// <copyright file="ContextCreatedEvent.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,16 +17,14 @@
 // under the License.
 // </copyright>
 
-namespace OpenQA.Selenium.BiDi.Speculation;
+namespace OpenQA.Selenium.BiDi.BrowsingContext;
 
-public sealed record PrefetchStatusUpdatedEventArgs(
+public sealed record ContextCreatedEventArgs(
     IBiDi BiDi,
-    BrowsingContext.BrowsingContext Context,
+    IReadOnlyList<Info>? Children,
+    Browser.ClientWindow ClientWindow,
+    BrowsingContext Context,
+    BrowsingContext? OriginalOpener,
     string Url,
-    PreloadingStatus Status)
-    : EventArgs(BiDi);
-
-internal sealed record PrefetchStatusUpdatedParameters(
-    BrowsingContext.BrowsingContext Context,
-    string Url,
-    PreloadingStatus Status);
+    Browser.UserContext UserContext,
+    BrowsingContext? Parent) : EventArgs(BiDi);
