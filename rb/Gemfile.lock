@@ -13,7 +13,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (7.2.3)
+    activesupport (7.2.3.1)
       base64
       benchmark (>= 0.3)
       bigdecimal
@@ -22,7 +22,7 @@ GEM
       drb
       i18n (>= 1.6, < 2)
       logger (>= 1.4.2)
-      minitest (>= 5.1)
+      minitest (>= 5.1, < 6)
       securerandom (>= 0.3)
       tzinfo (~> 2.0, >= 2.0.5)
     addressable (2.9.0)
@@ -73,9 +73,7 @@ GEM
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
     logger (1.7.0)
-    minitest (6.0.3)
-      drb (~> 2.0)
-      prism (~> 1.5)
+    minitest (5.27.0)
     mutex_m (0.3.0)
     parallel (1.28.0)
     parser (3.3.11.1)
@@ -199,12 +197,11 @@ PLATFORMS
   universal-java-18
   universal-java-21
   x64-mingw-ucrt
-  x64-mingw32
   x86_64-darwin-22
   x86_64-linux
 
 DEPENDENCIES
-  activesupport (~> 7.0)
+  activesupport (~> 7.2)
   curb (~> 1.0.5)
   debug (~> 1.7)
   git (~> 1.19)
