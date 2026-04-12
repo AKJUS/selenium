@@ -1,4 +1,4 @@
-// <copyright file="TestEnvironment.cs" company="Selenium Committers">
+// <copyright file="Utf8Handler.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,17 +17,25 @@
 // under the License.
 // </copyright>
 
-namespace OpenQA.Selenium.Tests.Infrastructure.Environment;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
-internal class TestEnvironment
+namespace OpenQA.Selenium.Testing.WebServer.Handlers;
+
+public static class Utf8Handler
 {
-    public bool CaptureWebServerOutput { get; set; }
+    public static async Task<IResult> Handle(HttpContext context, string path, string webContentRoot)
+    {
+        string filePath = Path.Combine(webContentRoot, path);
 
-    public string DriverServiceLocation { get; set; }
+        if (!File.Exists(filePath))
+        {
+            return Results.NotFound();
+        }
 
-    public bool HideWebServerCommandPrompt { get; set; }
+        string content = await File.ReadAllTextAsync(filePath);
 
-    public string ActiveDriverConfig { get; set; }
-
-    public Dictionary<string, DriverConfig> DriverConfigs { get; set; }
+        return Results.Content(content, "text/html; charset=UTF-8");
+    }
 }

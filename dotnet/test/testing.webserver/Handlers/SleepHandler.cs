@@ -1,4 +1,4 @@
-// <copyright file="WebsiteConfig.cs" company="Selenium Committers">
+// <copyright file="SleepHandler.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,17 +17,26 @@
 // under the License.
 // </copyright>
 
-namespace OpenQA.Selenium.Tests.Infrastructure.Environment;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
-public class WebsiteConfig
+namespace OpenQA.Selenium.Testing.WebServer.Handlers;
+
+public static class SleepHandler
 {
-    public string Protocol { get; set; }
+    public static async Task<IResult> Handle(HttpContext context)
+    {
+        string? duration = context.Request.Query["time"];
+        int seconds = int.Parse(duration!);
 
-    public string HostName { get; set; }
+        await Task.Delay(seconds * 1000);
 
-    public string Port { get; set; }
+        string html = $"<html><head><title>Done</title></head><body>Slept for {duration}s</body></html>";
 
-    public string SecurePort { get; set; }
+        context.Response.Headers.CacheControl = "no-cache";
+        context.Response.Headers.Pragma = "no-cache";
+        context.Response.Headers.Expires = "0";
 
-    public string Folder { get; set; }
+        return Results.Content(html, "text/html; charset=utf-8");
+    }
 }

@@ -1,4 +1,4 @@
-// <copyright file="TestEnvironment.cs" company="Selenium Committers">
+// <copyright file="PageHandler.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,17 +17,21 @@
 // under the License.
 // </copyright>
 
-namespace OpenQA.Selenium.Tests.Infrastructure.Environment;
+using Microsoft.AspNetCore.Http;
 
-internal class TestEnvironment
+namespace OpenQA.Selenium.Testing.WebServer.Handlers;
+
+public static class PageHandler
 {
-    public bool CaptureWebServerOutput { get; set; }
+    public static IResult Handle(string pageNumber)
+    {
+        string html = $"""
+            <html><head><title>Page{pageNumber}</title></head>
+            <body>Page number <span id="pageNumber">{pageNumber}</span>
+            <p><a href="../xhtmlTest.html" target="_top">top</a>
+            </body></html>
+            """;
 
-    public string DriverServiceLocation { get; set; }
-
-    public bool HideWebServerCommandPrompt { get; set; }
-
-    public string ActiveDriverConfig { get; set; }
-
-    public Dictionary<string, DriverConfig> DriverConfigs { get; set; }
+        return Results.Content(html, "text/html; charset=utf-8");
+    }
 }

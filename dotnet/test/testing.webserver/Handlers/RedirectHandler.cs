@@ -1,4 +1,4 @@
-// <copyright file="TestEnvironment.cs" company="Selenium Committers">
+// <copyright file="RedirectHandler.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,17 +17,20 @@
 // under the License.
 // </copyright>
 
-namespace OpenQA.Selenium.Tests.Infrastructure.Environment;
+using Microsoft.AspNetCore.Http;
 
-internal class TestEnvironment
+namespace OpenQA.Selenium.Testing.WebServer.Handlers;
+
+public static class RedirectHandler
 {
-    public bool CaptureWebServerOutput { get; set; }
+    public static IResult Handle(HttpContext context)
+    {
+        string path = context.Request.Path.Value ?? "/";
+        string basePath = path.Contains("/redirect")
+            ? path[..path.IndexOf("/redirect")]
+            : "";
+        string targetLocation = $"{basePath}/resultPage.html";
 
-    public string DriverServiceLocation { get; set; }
-
-    public bool HideWebServerCommandPrompt { get; set; }
-
-    public string ActiveDriverConfig { get; set; }
-
-    public Dictionary<string, DriverConfig> DriverConfigs { get; set; }
+        return Results.Redirect(targetLocation);
+    }
 }
