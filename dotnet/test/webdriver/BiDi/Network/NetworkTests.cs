@@ -288,6 +288,27 @@ internal class NetworkTests : BiDiTestFixture
     }
 
     [Test]
+    public async Task CanDisownData()
+    {
+        var collector = await bidi.Network.AddDataCollectorAsync([DataType.Response], 200000000);
+
+        await using var stream = await bidi.Network.ResponseCompleted.StreamAsync();
+
+        await context.NavigateAsync(UrlBuilder.WhereIs("simpleTest.html"), new() { Wait = ReadinessState.Complete });
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var request = await stream
+            .Where(e => e.Response.Url.Contains("simpleTest.html"))
+            .Select(e => e.Request.Request)
+            .FirstAsync(cts.Token);
+
+        Assert.That(
+            async () => await bidi.Network.DisownDataAsync(DataType.Response, collector.Collector, request),
+            Throws.Nothing);
+    }
+
+    [Test]
     public void CanSetCacheBehavior()
     {
         Assert.That(
