@@ -1,4 +1,4 @@
-// <copyright file="ILogModule.cs" company="Selenium Committers">
+// <copyright file="IEventStream.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,9 +17,9 @@
 // under the License.
 // </copyright>
 
-namespace OpenQA.Selenium.BiDi.Log;
+namespace OpenQA.Selenium.BiDi;
 
-public interface ILogModule
+public interface IEventStream<out TEventArgs> : IAsyncEnumerable<TEventArgs>, IAsyncDisposable
+    where TEventArgs : EventArgs
 {
-    IEventSource<EntryAddedEventArgs> EntryAdded { get; }
 }

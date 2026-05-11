@@ -1,4 +1,4 @@
-// <copyright file="ILogModule.cs" company="Selenium Committers">
+// <copyright file="InputEvent.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,9 +17,14 @@
 // under the License.
 // </copyright>
 
-namespace OpenQA.Selenium.BiDi.Log;
+using static OpenQA.Selenium.BiDi.Input.InputJsonSerializerContext;
 
-public interface ILogModule
+namespace OpenQA.Selenium.BiDi.Input;
+
+public static class InputEvent
 {
-    IEventSource<EntryAddedEventArgs> EntryAdded { get; }
+    public static EventDescriptor<FileDialogOpenedEventArgs> FileDialogOpened { get; } = EventDescriptor<FileDialogOpenedEventArgs>.Create<FileDialogInfo>(
+        "input.fileDialogOpened",
+        static (bidi, p) => new FileDialogOpenedEventArgs(bidi, p.Context, p.UserContext, p.Multiple, p.Element),
+        Default.FileDialogInfo);
 }

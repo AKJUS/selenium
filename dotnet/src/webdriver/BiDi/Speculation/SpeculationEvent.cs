@@ -1,4 +1,4 @@
-// <copyright file="ILogModule.cs" company="Selenium Committers">
+// <copyright file="SpeculationEvent.cs" company="Selenium Committers">
 // Licensed to the Software Freedom Conservancy (SFC) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -17,9 +17,14 @@
 // under the License.
 // </copyright>
 
-namespace OpenQA.Selenium.BiDi.Log;
+using static OpenQA.Selenium.BiDi.Speculation.SpeculationJsonSerializerContext;
 
-public interface ILogModule
+namespace OpenQA.Selenium.BiDi.Speculation;
+
+public static class SpeculationEvent
 {
-    IEventSource<EntryAddedEventArgs> EntryAdded { get; }
+    public static EventDescriptor<PrefetchStatusUpdatedEventArgs> PrefetchStatusUpdated { get; } = EventDescriptor<PrefetchStatusUpdatedEventArgs>.Create<PrefetchStatusUpdatedParameters>(
+        "speculation.prefetchStatusUpdated",
+        static (bidi, p) => new PrefetchStatusUpdatedEventArgs(bidi, p.Context, p.Url, p.Status),
+        Default.PrefetchStatusUpdatedParameters);
 }
