@@ -138,7 +138,7 @@ jobs:
       artifact-name: pypi-distributions
       artifact-path: |
         bazel-bin/py/selenium-*.whl
-        bazel-bin/py/selenium-*.tar.gz
+        bazel-bin/py/selenium-[0-9]*.tar.gz
     secrets: inherit
 
   publish-python:
