@@ -229,8 +229,7 @@ desc 'Install jars to local m2 directory'
 task :install do
   java_release_targets.each do |p|
     Bazel.execute('run',
-                  ['--stamp',
-                   '--define',
+                  ['--define',
                    "maven_repo=file://#{Dir.home}/.m2/repository",
                    '--define',
                    'gpg_sign=false'],
