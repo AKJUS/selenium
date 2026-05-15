@@ -6,7 +6,6 @@
   "dependencyDashboardLabels": ["B-dependencies"],
   "dependencyDashboardTitle": "Dependency Dashboard",
   "dependencyDashboardHeader": "Renovate is configured to list discovered dependency updates here first. Do not approve dashboard items until the update scope has been reviewed.",
-  "prCreation": "approval",
   "automerge": false,
   "skipArtifactsUpdate": true,
   "lockFileMaintenance": {
@@ -21,6 +20,13 @@
     "ruby": "3.3"
   },
   "packageRules": [
+    {
+      "description": "Treat Renovate config language constraints as Selenium support policy, not update targets.",
+      "matchManagers": ["renovate-config"],
+      "matchDatasources": ["java-version", "node-version", "python-version", "ruby-version"],
+      "matchPackageNames": ["java", "node", "python", "ruby"],
+      "enabled": false
+    },
     {
       "description": "Only propose Node.js runtime updates within the supported Node 22 line.",
       "matchManagers": ["node-version", "npm", "github-actions"],
@@ -65,52 +71,44 @@
     {
       "description": "Group Bazel and Bazel module dependency declarations in the dashboard.",
       "matchManagers": ["bazel", "bazel-module", "bazelisk"],
-      "dependencyDashboardCategory": "Bazel and Toolchains",
-      "groupName": "Bazel and toolchain dependencies"
+      "dependencyDashboardCategory": "Bazel and Toolchains"
     },
     {
       "description": "Use Maven version ordering for Maven artifacts found through Bazel managers.",
       "matchManagers": ["bazel", "bazel-module"],
       "matchDatasources": ["maven"],
       "versioning": "maven",
-      "dependencyDashboardCategory": "Java and Maven",
-      "groupName": "Java and Maven dependencies"
+      "dependencyDashboardCategory": "Java and Maven"
     },
     {
       "description": "Group GitHub Actions workflow dependencies in the dashboard.",
       "matchManagers": ["github-actions"],
-      "dependencyDashboardCategory": "GitHub Actions",
-      "groupName": "GitHub Actions dependencies"
+      "dependencyDashboardCategory": "GitHub Actions"
     },
     {
       "description": "Group JavaScript package declarations in the dashboard.",
       "matchManagers": ["npm"],
-      "dependencyDashboardCategory": "JavaScript",
-      "groupName": "JavaScript dependencies"
+      "dependencyDashboardCategory": "JavaScript"
     },
     {
       "description": "Group Python declarations and pinned requirements in the dashboard.",
       "matchManagers": ["pep621", "pip_requirements", "poetry"],
-      "dependencyDashboardCategory": "Python",
-      "groupName": "Python dependencies"
+      "dependencyDashboardCategory": "Python"
     },
     {
       "description": "Group Ruby declarations and runtime version files in the dashboard.",
       "matchManagers": ["bundler", "ruby-version"],
-      "dependencyDashboardCategory": "Ruby",
-      "groupName": "Ruby dependencies"
+      "dependencyDashboardCategory": "Ruby"
     },
     {
       "description": "Group Rust Cargo declarations in the dashboard.",
       "matchManagers": ["cargo"],
-      "dependencyDashboardCategory": "Rust",
-      "groupName": "Rust dependencies"
+      "dependencyDashboardCategory": "Rust"
     },
     {
       "description": "Group .NET package declarations and tools in the dashboard.",
       "matchManagers": ["nuget"],
-      "dependencyDashboardCategory": ".NET",
-      "groupName": ".NET dependencies"
+      "dependencyDashboardCategory": ".NET"
     }
   ]
 }
