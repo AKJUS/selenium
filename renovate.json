@@ -13,23 +13,43 @@
     "enabled": false
   },
   "labels": ["B-dependencies"],
+  "constraintsFiltering": "strict",
+  "constraints": {
+    "java": "11",
+    "node": "22",
+    "python": "3.10",
+    "ruby": "3.3"
+  },
   "packageRules": [
     {
-      "description": "Treat Renovate as the declaration upgrade mechanism; repo update/pin tasks own resolved lockfile changes.",
-      "matchManagers": ["bundler", "cargo", "npm", "pep621", "poetry"],
-      "rangeStrategy": "bump"
+      "description": "Only propose Node.js runtime updates within the supported Node 22 line.",
+      "matchManagers": ["node-version", "npm", "github-actions"],
+      "matchPackageNames": ["node"],
+      "allowedVersions": "<23"
     },
     {
-      "description": "Do not propose runtime, package-manager, or Bazel toolchain upgrades in the dashboard baseline.",
-      "matchManagers": ["bazelisk", "node-version", "npm", "nuget", "ruby-version"],
-      "matchPackageNames": ["bazel", "node", "@types/node", "pnpm", "paket", "ruby"],
-      "enabled": false
+      "description": "Only propose Node.js type definition updates within the supported Node 22 line.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@types/node"],
+      "allowedVersions": "<23"
     },
     {
-      "description": "Do not propose Bazel registry module upgrades for build rules/tooling in the dashboard baseline.",
-      "matchManagers": ["bazel-module"],
-      "matchDatasources": ["bazel"],
-      "enabled": false
+      "description": "Only propose Python runtime updates within the supported Python 3.10 line.",
+      "matchDatasources": ["python-version"],
+      "matchPackageNames": ["python"],
+      "allowedVersions": "<3.11"
+    },
+    {
+      "description": "Only propose Ruby runtime updates within the supported Ruby 3.3 line.",
+      "matchManagers": ["ruby-version"],
+      "matchPackageNames": ["ruby"],
+      "allowedVersions": "<3.4"
+    },
+    {
+      "description": "Only propose Java runtime updates within the supported Java 11 line.",
+      "matchDatasources": ["java-version"],
+      "matchPackageNames": ["java", "java-jdk"],
+      "allowedVersions": "<12"
     },
     {
       "description": "Do not track Docker image references in this repository.",
@@ -45,44 +65,52 @@
     {
       "description": "Group Bazel and Bazel module dependency declarations in the dashboard.",
       "matchManagers": ["bazel", "bazel-module", "bazelisk"],
-      "dependencyDashboardCategory": "Bazel and Toolchains"
+      "dependencyDashboardCategory": "Bazel and Toolchains",
+      "groupName": "Bazel and toolchain dependencies"
     },
     {
       "description": "Use Maven version ordering for Maven artifacts found through Bazel managers.",
       "matchManagers": ["bazel", "bazel-module"],
       "matchDatasources": ["maven"],
       "versioning": "maven",
-      "dependencyDashboardCategory": "Java and Maven"
+      "dependencyDashboardCategory": "Java and Maven",
+      "groupName": "Java and Maven dependencies"
     },
     {
       "description": "Group GitHub Actions workflow dependencies in the dashboard.",
       "matchManagers": ["github-actions"],
-      "dependencyDashboardCategory": "GitHub Actions"
+      "dependencyDashboardCategory": "GitHub Actions",
+      "groupName": "GitHub Actions dependencies"
     },
     {
       "description": "Group JavaScript package declarations in the dashboard.",
       "matchManagers": ["npm"],
-      "dependencyDashboardCategory": "JavaScript"
+      "dependencyDashboardCategory": "JavaScript",
+      "groupName": "JavaScript dependencies"
     },
     {
       "description": "Group Python declarations and pinned requirements in the dashboard.",
       "matchManagers": ["pep621", "pip_requirements", "poetry"],
-      "dependencyDashboardCategory": "Python"
+      "dependencyDashboardCategory": "Python",
+      "groupName": "Python dependencies"
     },
     {
       "description": "Group Ruby declarations and runtime version files in the dashboard.",
       "matchManagers": ["bundler", "ruby-version"],
-      "dependencyDashboardCategory": "Ruby"
+      "dependencyDashboardCategory": "Ruby",
+      "groupName": "Ruby dependencies"
     },
     {
       "description": "Group Rust Cargo declarations in the dashboard.",
       "matchManagers": ["cargo"],
-      "dependencyDashboardCategory": "Rust"
+      "dependencyDashboardCategory": "Rust",
+      "groupName": "Rust dependencies"
     },
     {
       "description": "Group .NET package declarations and tools in the dashboard.",
       "matchManagers": ["nuget"],
-      "dependencyDashboardCategory": ".NET"
+      "dependencyDashboardCategory": ".NET",
+      "groupName": ".NET dependencies"
     }
   ]
 }
