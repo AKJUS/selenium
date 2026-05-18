@@ -12,7 +12,7 @@
     "enabled": false
   },
   "labels": ["B-dependencies"],
-  "ignorePaths": ["**/requirements_lock.txt"],
+  "ignorePaths": ["**/requirements_lock.txt", "renovate.json"],
   "constraintsFiltering": "strict",
   "constraints": {
     "node": "22",
