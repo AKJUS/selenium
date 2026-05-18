@@ -134,6 +134,12 @@
       "matchManagers": ["bazel-module"],
       "matchPackageNames": ["llvm", "rules_rs"],
       "enabled": false
+    },
+    {
+      "description": "rules_python upgrade blocked pending https://github.com/bazel-contrib/rules_python/pull/3790.",
+      "matchManagers": ["bazel-module"],
+      "matchPackageNames": ["rules_python"],
+      "enabled": false
     }
   ]
 }
