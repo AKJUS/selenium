@@ -39,6 +39,9 @@ jobs:
   test:
     name: Test
     needs: commit-repins
+    permissions:
+      contents: read
+      packages: read
     uses: ./.github/workflows/ci-rbe.yml
 
   ci-gh:
