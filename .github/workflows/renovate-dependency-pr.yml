@@ -3,10 +3,6 @@ name: Renovate Dependency PR
 on:
   workflow_call:
     inputs:
-      base-ref:
-        description: Base branch to target
-        required: true
-        type: string
       kind:
         description: Dependency update type. Must be minor or major.
         required: true
@@ -58,9 +54,9 @@ jobs:
         ./go rust:pin
         ./go format
         ./scripts/github-actions/ci-build.sh
-        git fetch origin "${{ inputs.base-ref }}" --depth=1
+        git fetch origin "${{ github.ref_name }}" --depth=1
         git add -A
-        git diff --binary --cached "origin/${{ inputs.base-ref }}" > full-changes.patch
+        git diff --binary --cached "origin/${{ github.ref_name }}" > full-changes.patch
       artifact-name: ${{ inputs.kind }}-dependency-changes
       artifact-path: full-changes.patch
 
@@ -72,7 +68,6 @@ jobs:
       - name: Checkout base
         uses: actions/checkout@v6
         with:
-          ref: ${{ inputs.base-ref }}
           persist-credentials: false
       - name: Download patch
         uses: actions/download-artifact@v8
@@ -89,7 +84,7 @@ jobs:
           commit-message: "[build] Update ${{ inputs.kind }} dependencies"
           author: Selenium CI Bot <selenium-ci@users.noreply.github.com>
           branch: renovate/${{ inputs.kind }}
-          base: ${{ inputs.base-ref }}
+          base: ${{ github.ref_name }}
           title: "[build] Update ${{ inputs.kind }} dependencies"
           labels: |
             C-build

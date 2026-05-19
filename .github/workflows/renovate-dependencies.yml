@@ -2,12 +2,6 @@ name: Renovate Dependencies
 
 on:
   workflow_dispatch:
-    inputs:
-      base-ref:
-        description: Base branch or ref to update
-        required: true
-        default: trunk
-        type: string
 
 concurrency:
   group: renovate-dependencies
@@ -21,14 +15,13 @@ permissions:
 
 jobs:
   reset-update-branch:
-    name: Reset temp/bazel-updates to ${{ inputs.base-ref }}
+    name: Reset temp/bazel-updates to ${{ github.ref_name }}
     if: github.event.repository.fork == false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout base ref
         uses: actions/checkout@v6
         with:
-          ref: ${{ inputs.base-ref }}
           token: ${{ secrets.SELENIUM_CI_TOKEN || github.token }}
       - name: Force-push to temp/bazel-updates
         run: git push --force origin "HEAD:temp/bazel-updates"
@@ -40,7 +33,6 @@ jobs:
     uses: ./.github/workflows/bazel.yml
     with:
       name: Prepare Bazel updates
-      ref: ${{ inputs.base-ref }}
       caching: false
       run: |
         ./go all:update
@@ -55,7 +47,6 @@ jobs:
     with:
       artifact-name: bazel-updates
       commit-message: "Update dependencies"
-      ref: ${{ inputs.base-ref }}
       push-branch: temp/bazel-updates
     secrets:
       SELENIUM_CI_TOKEN: ${{ secrets.SELENIUM_CI_TOKEN }}
@@ -106,7 +97,6 @@ jobs:
         kind: [minor, major]
     uses: ./.github/workflows/renovate-dependency-pr.yml
     with:
-      base-ref: ${{ inputs.base-ref }}
       kind: ${{ matrix.kind }}
     secrets:
       SELENIUM_CI_TOKEN: ${{ secrets.SELENIUM_CI_TOKEN }}
