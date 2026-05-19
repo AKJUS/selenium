@@ -12,7 +12,12 @@
     "enabled": false
   },
   "labels": ["B-dependencies"],
-  "ignorePaths": ["**/requirements_lock.txt", "renovate.json"],
+  "baseBranchPatterns": ["trunk"],
+  "ignorePaths": [
+    "**/requirements_lock.txt",
+    "renovate.json",
+    "common/src/web/simpleTest.html"
+  ],
   "constraintsFiltering": "strict",
   "constraints": {
     "node": "22",
