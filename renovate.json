@@ -30,7 +30,7 @@
     },
     {
       "description": "Treat Renovate config language constraints as Selenium support policy, not update targets.",
-      "matchManagers": ["renovate-config", "renovate-config-presets"],
+      "matchManagers": ["renovate-config"],
       "matchDatasources": ["node-version", "python-version", "ruby-version"],
       "matchPackageNames": ["node", "python", "ruby"],
       "enabled": false
