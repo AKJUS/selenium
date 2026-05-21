@@ -37,14 +37,18 @@ jobs:
         [ "${{ github.event_name }}" == "workflow_call" ] || \
         [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
           echo "Running all targets for ${{ github.event_name }} event"
-          echo "//java/... //py:all //rb/... //dotnet/... //rust/..." > bazel-targets.txt
+          echo "//java/... //py/... //rb/... //dotnet/... //rust/..." > bazel-targets.txt
         else
           if [ -n "${{ github.event.pull_request.base.sha }}" ]; then
             BASE_SHA="HEAD^1"
-          else
+          elif [ "${{ github.ref }}" = "refs/heads/trunk" ]; then
             BASE_SHA="${{ github.event.before }}"
+          else
+            ahead=$(gh api "repos/${{ github.repository }}/compare/trunk...${{ github.ref_name }}" --jq .ahead_by)
+            git fetch --no-tags --depth=$((ahead + 1)) origin "${{ github.ref_name }}"
+            BASE_SHA="HEAD~$ahead"
           fi
-          if [ -n "$BASE_SHA" ] && [ "$BASE_SHA" != "0000000000000000000000000000000000000000" ]; then
+          if git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
             ./go bazel:affected_targets "${BASE_SHA}..HEAD" bazel-test-file-index
           else
             ./go bazel:affected_targets bazel-test-file-index
