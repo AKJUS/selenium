@@ -50,25 +50,26 @@ module Selenium
           path = @service.class.driver_path
           path = path.call if path.is_a?(Proc)
           exe = @service.class::EXECUTABLE
-          if path
-            WebDriver.logger.debug("Skipping Selenium Manager; path to #{exe} specified in service class: #{path}")
-            Platform.assert_executable(path)
-            {driver_path: path}
-          else
-            output = SeleniumManager.binary_paths(*to_args)
-            formatted = {driver_path: Platform.cygwin_path(output['driver_path'], only_cygwin: true),
-                         browser_path: Platform.cygwin_path(output['browser_path'], only_cygwin: true)}
-            Platform.assert_executable(formatted[:driver_path])
+          result = if path
+                     WebDriver.logger.debug("Skipping Selenium Manager; path to #{exe} specified in service class: #{path}")
+                     Platform.assert_executable(path)
+                     {driver_path: path}
+                   else
+                     output = SeleniumManager.binary_paths(*to_args)
+                     formatted = {driver_path: Platform.cygwin_path(output['driver_path'], only_cygwin: true),
+                                  browser_path: Platform.cygwin_path(output['browser_path'], only_cygwin: true)}
+                     Platform.assert_executable(formatted[:driver_path])
+                     Platform.assert_executable(formatted[:browser_path])
+                     @options.binary ||= formatted[:browser_path] if @options.respond_to?(:binary)
+                     formatted
+                   end
 
-            browser_path = formatted[:browser_path]
-            Platform.assert_executable(browser_path)
-            if @options.respond_to?(:binary) && @options.binary.nil?
-              @options.binary = browser_path
-              @options.browser_version = nil
-            end
+          # A binary (whether user-supplied or resolved by Selenium Manager) is the
+          # source of truth for the browser version, so drop any named version that
+          # would otherwise conflict with what the binary actually is.
+          @options.browser_version = nil if @options.respond_to?(:binary) && @options.binary
 
-            formatted
-          end
+          result
         rescue StandardError => e
           WebDriver.logger.error("Exception occurred: #{e.message}")
           WebDriver.logger.error("Backtrace:\n\t#{e.backtrace&.join("\n\t")}")
