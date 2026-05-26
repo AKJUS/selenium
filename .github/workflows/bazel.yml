@@ -71,6 +71,11 @@ on:
         required: false
         type: string
         default: ''
+      cache-save:
+        description: Save the Bazel cache after the run (avoids multiple jobs clobbering it)
+        required: false
+        type: boolean
+        default: false
       gem-trusted-publishing:
         description: Exchange GitHub OIDC token for a RubyGems API token (requires trusted publisher configured on rubygems.org)
         required: false
@@ -156,7 +161,7 @@ jobs:
         continue-on-error: true
         uses: bazel-contrib/setup-bazel@0.19.0
         with:
-          cache-save: ${{ github.ref_name == 'trunk' }}
+          cache-save: ${{ inputs.cache-save }}
           bazelisk-cache: true
           bazelrc: common --color=yes
           # Workaround for long path issues: https://github.com/bazelbuild/bazel/pull/22532
