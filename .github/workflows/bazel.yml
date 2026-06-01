@@ -208,6 +208,7 @@ jobs:
           fi
       - name: Run Bazel
         id: run-bazel
+        continue-on-error: true
         shell: bash
         env:
           MSYS_NO_PATHCONV: 1
@@ -218,15 +219,16 @@ jobs:
             ${{ inputs.run }}
           } 2>&1 | tee build/bazel-console.log
       - name: Rerun failures with debug
-        if: failure() && steps.run-bazel.outcome == 'failure'
+        id: rerun-failures
+        if: steps.run-bazel.outcome == 'failure'
         shell: bash
         run: ./scripts/github-actions/rerun-failures.sh '${{ inputs.run }}' '${{ inputs.rerun-with-debug }}'
       - name: Collect failed test logs
-        if: failure() && steps.run-bazel.outcome == 'failure'
+        if: always() && steps.run-bazel.outcome == 'failure'
         shell: bash
         run: ./scripts/github-actions/collect-test-logs.sh
       - name: Upload failed test logs
-        if: failure() && steps.run-bazel.outcome == 'failure'
+        if: always() && steps.run-bazel.outcome == 'failure'
         uses: actions/upload-artifact@v7
         with:
           name: test-logs-${{ inputs.os }}-${{ inputs.name }}-${{ inputs.browser }}
