@@ -95,6 +95,9 @@ jobs:
       GEM_HOST_API_KEY: ${{ secrets.GEM_HOST_API_KEY }}
       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
     steps:
+      - name: Configure Selenium Manager cache path
+        shell: bash
+        run: echo "SE_CACHE_PATH=$RUNNER_TEMP/selenium-cache" >> "$GITHUB_ENV"
       - name: Calculate fetch depth
         id: depth
         shell: bash

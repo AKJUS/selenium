@@ -104,6 +104,7 @@ test --test_env=MOZ_HEADLESS
 test --test_env=SELENIUM_BROWSER
 test --test_env=PYTHON_VERSION
 test --test_env=SE_AVOID_STATS=true
+test --test_env=SE_CACHE_PATH
 
 # Remove once rules_ruby support proper $LOAD_PATH expansion.
 test --test_env=RUBYOPT="-Irb/lib -w"
