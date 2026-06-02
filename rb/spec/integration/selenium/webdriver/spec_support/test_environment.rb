@@ -142,7 +142,7 @@ module Selenium
         end
 
         def rbe?
-          Dir.pwd.start_with?('/mnt/engflow')
+          ENV['REMOTE_BUILD'] == '1'
         end
 
         def reset_remote_server
