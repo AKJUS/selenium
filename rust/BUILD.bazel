@@ -71,6 +71,12 @@ filegroup(
     ],
 )
 
+alias(
+    name = "rust",
+    actual = ":selenium_manager",
+    visibility = ["//visibility:public"],
+)
+
 rust_binary(
     # Yes, this name is very similar to the library. Note the dash
     # instead of an underscore
@@ -84,7 +90,7 @@ rust_binary(
     rustc_env = {
         "CARGO_PKG_DESCRIPTION": "Selenium Manager is a CLI tool that automatically manages the browser/driver resources required by Selenium.",
     },
-    version = "0.4.45",
+    version = "0.4.46-nightly",
     visibility = ["//visibility:public"],
     deps = [
         ":selenium_manager",
