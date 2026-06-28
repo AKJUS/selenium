@@ -298,10 +298,10 @@ internal class NetworkTests : BiDiTestFixture
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
-        var request = await stream
+        var request = await stream.ReadAllAsync(cts.Token)
             .Where(e => e.Response.Url.Contains("simpleTest.html"))
             .Select(e => e.Request.Request)
-            .FirstAsync(cts.Token);
+            .FirstAsync();
 
         Assert.That(
             async () => await bidi.Network.DisownDataAsync(DataType.Response, collector.Collector, request),
