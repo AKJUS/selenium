@@ -19,7 +19,6 @@
 
 using System.Drawing;
 using System.IO;
-using OpenQA.Selenium.Tests.Infrastructure.Environment;
 
 namespace OpenQA.Selenium.Tests;
 
@@ -40,7 +39,7 @@ public class TakesScreenshotTests : DriverTestFixture
             return;
         }
 
-        driver.Url = simpleTestPage;
+        driver.Url = Urls.SimpleTestPage;
 
         string filename = Path.Combine(Path.GetTempPath(), "snapshot" + new Random().Next().ToString() + ".png");
         Screenshot screenImage = screenshotCapableDriver.GetScreenshot();
@@ -58,7 +57,7 @@ public class TakesScreenshotTests : DriverTestFixture
             return;
         }
 
-        driver.Url = simpleTestPage;
+        driver.Url = Urls.SimpleTestPage;
         Screenshot screenImage = screenshotCapableDriver.GetScreenshot();
         string base64 = screenImage.AsBase64EncodedString;
         Assert.That(base64.Length, Is.GreaterThan(0));
@@ -72,7 +71,7 @@ public class TakesScreenshotTests : DriverTestFixture
             return;
         }
 
-        driver.Url = simpleTestPage;
+        driver.Url = Urls.SimpleTestPage;
         Screenshot screenImage = screenshotCapableDriver.GetScreenshot();
         byte[] bytes = screenImage.AsByteArray;
         Assert.That(bytes.Length, Is.GreaterThan(0));
@@ -94,7 +93,7 @@ public class TakesScreenshotTests : DriverTestFixture
             return;
         }
 
-        driver.Url = EnvironmentManager.Instance.UrlBuilder.WhereIs("screen/screen.html");
+        driver.Url = Urls.WhereIs("screen/screen.html");
         Screenshot screenshot = screenshotCapableDriver.GetScreenshot();
 
         HashSet<string> actualColors = ScanActualColors(screenshot,
@@ -118,7 +117,7 @@ public class TakesScreenshotTests : DriverTestFixture
         Assert.Ignore("Skipping test: this framework can not process colors.");
 #endif
 
-        driver.Url = EnvironmentManager.Instance.UrlBuilder.WhereIs("screen/screen.html");
+        driver.Url = Urls.WhereIs("screen/screen.html");
         IWebElement element = driver.FindElement(By.Id("cell11"));
 
         if (element is not ITakesScreenshot screenshotCapableElement)
@@ -151,7 +150,7 @@ public class TakesScreenshotTests : DriverTestFixture
             return;
         }
 
-        driver.Url = EnvironmentManager.Instance.UrlBuilder.WhereIs("screen/screen_frames.html");
+        driver.Url = Urls.WhereIs("screen/screen_frames.html");
         WaitFor(FrameToBeAvailableAndSwitchedTo("frame1"), "Did not switch to frame1");
         WaitFor(ElementToBeVisibleWithId("content"), "Did not find visible element with id content");
 
@@ -195,7 +194,7 @@ public class TakesScreenshotTests : DriverTestFixture
             return;
         }
 
-        driver.Url = EnvironmentManager.Instance.UrlBuilder.WhereIs("screen/screen_iframes.html");
+        driver.Url = Urls.WhereIs("screen/screen_iframes.html");
 
         // Resize the window to avoid scrollbars in screenshot
         Size originalSize = driver.Manage().Window.Size;
@@ -237,7 +236,7 @@ public class TakesScreenshotTests : DriverTestFixture
             return;
         }
 
-        driver.Url = EnvironmentManager.Instance.UrlBuilder.WhereIs("screen/screen_frames.html");
+        driver.Url = Urls.WhereIs("screen/screen_frames.html");
 
         driver.SwitchTo().Frame(driver.FindElement(By.Id("frame2")));
 
@@ -277,7 +276,7 @@ public class TakesScreenshotTests : DriverTestFixture
             return;
         }
 
-        driver.Url = EnvironmentManager.Instance.UrlBuilder.WhereIs("screen/screen_iframes.html");
+        driver.Url = Urls.WhereIs("screen/screen_iframes.html");
 
         // Resize the window to avoid scrollbars in screenshot
         Size originalSize = driver.Manage().Window.Size;

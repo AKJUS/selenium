@@ -19,7 +19,6 @@
 
 using System.Drawing;
 using OpenQA.Selenium.Interactions;
-using OpenQA.Selenium.Tests.Infrastructure.Environment;
 
 namespace OpenQA.Selenium.Tests.Interactions;
 
@@ -68,7 +67,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [Test]
     public void ShouldAllowDoubleClickThenNavigate()
     {
-        driver.Url = javascriptPage;
+        driver.Url = Urls.JavascriptPage;
 
         IWebElement toDoubleClick = driver.FindElement(By.Id("doubleClickField"));
 
@@ -76,13 +75,13 @@ public class BasicMouseInterfaceTests : DriverTestFixture
         IAction dblClick = actionProvider.DoubleClick(toDoubleClick).Build();
 
         dblClick.Perform();
-        driver.Url = droppableItems;
+        driver.Url = Urls.DroppableItems;
     }
 
     [Test]
     public void ShouldAllowDragAndDrop()
     {
-        driver.Url = droppableItems;
+        driver.Url = Urls.DroppableItems;
 
         DateTime waitEndTime = DateTime.Now.Add(TimeSpan.FromSeconds(15));
 
@@ -120,7 +119,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [Test]
     public void ShouldAllowDoubleClick()
     {
-        driver.Url = javascriptPage;
+        driver.Url = Urls.JavascriptPage;
 
         IWebElement toDoubleClick = driver.FindElement(By.Id("doubleClickField"));
 
@@ -134,7 +133,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [Test]
     public void ShouldAllowContextClick()
     {
-        driver.Url = javascriptPage;
+        driver.Url = Urls.JavascriptPage;
 
         IWebElement toContextClick = driver.FindElement(By.Id("doubleClickField"));
 
@@ -149,7 +148,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [IgnoreBrowser(Browser.Remote, "API not implemented in driver")]
     public void ShouldAllowMoveAndClick()
     {
-        driver.Url = javascriptPage;
+        driver.Url = Urls.JavascriptPage;
 
         IWebElement toClick = driver.FindElement(By.Id("clickField"));
 
@@ -164,7 +163,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [IgnoreBrowser(Browser.Remote, "API not implemented in driver")]
     public void ShouldAllowMoveAndClickDoubleWrappedElement()
     {
-        driver.Url = javascriptPage;
+        driver.Url = Urls.JavascriptPage;
 
         IWebElement toClick = driver.FindElement(By.Id("clickField"));
 
@@ -184,7 +183,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [IgnoreBrowser(Browser.Firefox, "Not working properly in RBE, works locally with pinned browsers")]
     public void ShouldMoveToLocation()
     {
-        driver.Url = mouseInteractionPage;
+        driver.Url = Urls.MouseInteractionPage;
 
         Actions actionProvider = new Actions(driver);
         actionProvider.MoveToLocation(100, 200).Build().Perform();
@@ -198,7 +197,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [Test]
     public void ShouldNotMoveToANullLocator()
     {
-        driver.Url = javascriptPage;
+        driver.Url = Urls.JavascriptPage;
 
         Assert.That(() => new Actions(driver).MoveToElement(null).Perform(), Throws.InstanceOf<ArgumentException>());
     }
@@ -211,7 +210,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [IgnoreBrowser(Browser.Safari, "Drivers correctly click at current mouse position without another move, preserving mouse position.")]
     public void MousePositionIsNotPreservedInActionsChain()
     {
-        driver.Url = javascriptPage;
+        driver.Url = Urls.JavascriptPage;
         IWebElement toMoveTo = driver.FindElement(By.Id("clickField"));
 
         new Actions(driver).MoveToElement(toMoveTo).Perform();
@@ -222,7 +221,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [IgnoreBrowser(Browser.All, "Behaviour not finalized yet regarding linked images.")]
     public void MovingIntoAnImageEnclosedInALink()
     {
-        driver.Url = linkedImage;
+        driver.Url = Urls.LinkedImage;
 
         // Note: For some reason, the Accessibility API in Firefox will not be available before we
         // click on something. As a work-around, click on a different element just to get going.
@@ -247,7 +246,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [IgnoreBrowser(Browser.Safari, "Moving outside of view port throws exception in spec-compliant driver")]
     public void MovingMouseBackAndForthPastViewPort()
     {
-        driver.Url = EnvironmentManager.Instance.UrlBuilder.WhereIs("veryLargeCanvas.html");
+        driver.Url = Urls.WhereIs("veryLargeCanvas.html");
 
         IWebElement firstTarget = driver.FindElement(By.Id("r1"));
         new Actions(driver).MoveToElement(firstTarget).Click().Perform();
@@ -275,7 +274,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [Test]
     public void ShouldClickElementInIFrame()
     {
-        driver.Url = clicksPage;
+        driver.Url = Urls.ClicksPage;
         try
         {
             driver.SwitchTo().Frame("source");
@@ -293,7 +292,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [Test]
     public void ShouldAllowUsersToHoverOverElements()
     {
-        driver.Url = javascriptPage;
+        driver.Url = Urls.JavascriptPage;
 
         IWebElement element = driver.FindElement(By.Id("menu1"));
 
@@ -311,7 +310,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [Test]
     public void HoverPersists()
     {
-        driver.Url = javascriptPage;
+        driver.Url = Urls.JavascriptPage;
         // Move to a different element to make sure the mouse is not over the
         // element with id 'item1' (from a previous test).
         new Actions(driver).MoveToElement(driver.FindElement(By.Id("dynamo"))).Perform();
@@ -335,7 +334,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [Test]
     public void MovingMouseByRelativeOffset()
     {
-        driver.Url = mouseTrackerPage;
+        driver.Url = Urls.MouseTrackerPage;
 
         IWebElement trackerDiv = driver.FindElement(By.Id("mousetracker"));
         new Actions(driver).MoveToElement(trackerDiv).Build().Perform();
@@ -352,7 +351,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [Test]
     public void MovingMouseToRelativeElementOffset()
     {
-        driver.Url = mouseTrackerPage;
+        driver.Url = Urls.MouseTrackerPage;
 
         IWebElement trackerDiv = driver.FindElement(By.Id("mousetracker"));
         Size size = trackerDiv.Size;
@@ -367,7 +366,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [Test]
     public void MovingMouseToRelativeZeroElementOffset()
     {
-        driver.Url = mouseTrackerPage;
+        driver.Url = Urls.MouseTrackerPage;
 
         IWebElement trackerDiv = driver.FindElement(By.Id("mousetracker"));
         Size size = trackerDiv.Size;
@@ -383,7 +382,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [NeedsFreshDriver(IsCreatedBeforeTest = true)]
     public void MoveRelativeToBody()
     {
-        driver.Url = mouseTrackerPage;
+        driver.Url = Urls.MouseTrackerPage;
 
         new Actions(driver).MoveByOffset(50, 100).Build().Perform();
 
@@ -395,7 +394,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [Test]
     public void MoveMouseByOffsetOverAndOutOfAnElement()
     {
-        driver.Url = mouseOverPage;
+        driver.Url = Urls.MouseOverPage;
 
         IWebElement greenbox = driver.FindElement(By.Id("greenbox"));
         IWebElement redbox = driver.FindElement(By.Id("redbox"));
@@ -421,7 +420,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
     [Test]
     public void CanMouseOverAndOutOfAnElement()
     {
-        driver.Url = mouseOverPage;
+        driver.Url = Urls.MouseOverPage;
 
         IWebElement greenbox = driver.FindElement(By.Id("greenbox"));
         IWebElement redbox = driver.FindElement(By.Id("redbox"));
@@ -459,7 +458,7 @@ public class BasicMouseInterfaceTests : DriverTestFixture
 
     private void PerformDragAndDropWithMouse()
     {
-        driver.Url = draggableLists;
+        driver.Url = Urls.DraggableLists;
 
         IWebElement dragReporter = driver.FindElement(By.Id("dragging_reports"));
 

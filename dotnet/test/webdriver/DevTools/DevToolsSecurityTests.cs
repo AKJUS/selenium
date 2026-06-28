@@ -17,7 +17,6 @@
 // under the License.
 // </copyright>
 
-using OpenQA.Selenium.Tests.Infrastructure.Environment;
 using CurrentCdpVersion = OpenQA.Selenium.DevTools.V149;
 
 namespace OpenQA.Selenium.Tests.DevTools;
@@ -49,7 +48,7 @@ public class DevToolsSecurityTests : DevToolsTestFixture
         };
         domains.Security.SecurityStateChanged += securityStateChangedHandler;
 
-        driver.Url = EnvironmentManager.Instance.UrlBuilder.WhereIs("devToolsSecurityTest");
+        driver.Url = Urls.WhereIs("devToolsSecurityTest");
         sync.Wait(TimeSpan.FromSeconds(5));
 
         await domains.Security.Disable();
@@ -73,7 +72,7 @@ public class DevToolsSecurityTests : DevToolsTestFixture
             Ignore = true
         });
 
-        driver.Url = EnvironmentManager.Instance.UrlBuilder.WhereIs("devToolsSecurityTest");
+        driver.Url = Urls.WhereIs("devToolsSecurityTest");
         Assert.That(driver.PageSource, Contains.Substring("Security Test"));
     }
 }

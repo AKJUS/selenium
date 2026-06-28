@@ -21,7 +21,6 @@ using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using OpenQA.Selenium.Interactions;
-using OpenQA.Selenium.Tests.Infrastructure.Environment;
 
 namespace OpenQA.Selenium.Tests.Interactions;
 
@@ -52,7 +51,7 @@ public class CombinedInputActionsTests : DriverTestFixture
     [IgnoreBrowser(Browser.IE, "IE reports [0,0] as location for <option> elements")]
     public void PlainClickingOnMultiSelectionList()
     {
-        driver.Url = formSelectionPage;
+        driver.Url = Urls.FormSelectionPage;
 
         ReadOnlyCollection<IWebElement> options = driver.FindElements(By.TagName("option"));
 
@@ -73,7 +72,7 @@ public class CombinedInputActionsTests : DriverTestFixture
     [Test]
     public void ShouldAllowSettingActivePointerWithKeyBoardActions()
     {
-        driver.Url = loginPage;
+        driver.Url = Urls.LoginPage;
 
         IWebElement username = driver.FindElement(By.Id("username-field"));
         IWebElement password = driver.FindElement(By.Id("password-field"));
@@ -100,7 +99,7 @@ public class CombinedInputActionsTests : DriverTestFixture
     [IgnoreBrowser(Browser.IE, "IE reports [0,0] as location for <option> elements")]
     public void ShiftClickingOnMultiSelectionList()
     {
-        driver.Url = formSelectionPage;
+        driver.Url = Urls.FormSelectionPage;
 
         ReadOnlyCollection<IWebElement> options = driver.FindElements(By.TagName("option"));
 
@@ -130,7 +129,7 @@ public class CombinedInputActionsTests : DriverTestFixture
             controlModifier = Keys.Command;
         }
 
-        driver.Url = formSelectionPage;
+        driver.Url = Urls.FormSelectionPage;
 
         ReadOnlyCollection<IWebElement> options = driver.FindElements(By.TagName("option"));
 
@@ -158,7 +157,7 @@ public class CombinedInputActionsTests : DriverTestFixture
             controlModifier = Keys.Command;
         }
 
-        driver.Url = selectableItemsPage;
+        driver.Url = Urls.SelectableItemsPage;
 
         IWebElement reportingElement = driver.FindElement(By.Id("infodiv"));
 
@@ -184,7 +183,7 @@ public class CombinedInputActionsTests : DriverTestFixture
     [Test]
     public void CanMoveMouseToAnElementInAnIframeAndClick()
     {
-        driver.Url = EnvironmentManager.Instance.UrlBuilder.WhereIs("click_tests/click_in_iframe.html");
+        driver.Url = Urls.WhereIs("click_tests/click_in_iframe.html");
 
         WaitFor<IWebElement>(() => driver.FindElement(By.Id("ifr")), "Did not find element");
         driver.SwitchTo().Frame("ifr");
@@ -215,7 +214,7 @@ public class CombinedInputActionsTests : DriverTestFixture
     [Test]
     public void CanClickOnLinksWithAnOffset()
     {
-        driver.Url = clicksPage;
+        driver.Url = Urls.ClicksPage;
 
         WaitFor(() => { return driver.FindElement(By.Id("normal")); }, "Could not find element with id 'normal'");
         IWebElement link = driver.FindElement(By.Id("normal"));
@@ -231,7 +230,7 @@ public class CombinedInputActionsTests : DriverTestFixture
     [Test]
     public void ClickAfterMoveToAnElementWithAnOffsetShouldUseLastMousePosition()
     {
-        driver.Url = clickEventPage;
+        driver.Url = Urls.ClickEventPage;
 
         IWebElement element = driver.FindElement(By.Id("eventish"));
         Point location = element.Location;
@@ -278,7 +277,7 @@ public class CombinedInputActionsTests : DriverTestFixture
             controlModifier = Keys.Command;
         }
 
-        driver.Url = javascriptPage;
+        driver.Url = Urls.JavascriptPage;
 
         IWebElement element = driver.FindElement(By.Id("keyReporter"));
 
@@ -317,7 +316,7 @@ public class CombinedInputActionsTests : DriverTestFixture
     [NeedsFreshDriver(IsCreatedBeforeTest = true)]
     public void CombiningShiftAndClickResultsInANewWindow()
     {
-        driver.Url = linkedImage;
+        driver.Url = Urls.LinkedImage;
         IWebElement link = driver.FindElement(By.Id("link"));
         string originalTitle = driver.Title;
 
@@ -348,7 +347,7 @@ public class CombinedInputActionsTests : DriverTestFixture
     [IgnoreBrowser(Browser.IE, "Edge in IE Mode does not properly handle multiple windows")]
     public void HoldingDownShiftKeyWhileClicking()
     {
-        driver.Url = clickEventPage;
+        driver.Url = Urls.ClickEventPage;
 
         IWebElement toClick = driver.FindElement(By.Id("eventish"));
 
@@ -361,7 +360,7 @@ public class CombinedInputActionsTests : DriverTestFixture
     [Test]
     public void CanClickOnSuckerFishStyleMenu()
     {
-        driver.Url = javascriptPage;
+        driver.Url = Urls.JavascriptPage;
 
         // Move to a different element to make sure the mouse is not over the
         // element with id 'item1' (from a previous test).
@@ -386,7 +385,7 @@ public class CombinedInputActionsTests : DriverTestFixture
     [Test]
     public void CanClickOnSuckerFishMenuItem()
     {
-        driver.Url = javascriptPage;
+        driver.Url = Urls.JavascriptPage;
 
         // Move to a different element to make sure the mouse is not over the
         // element with id 'item1' (from a previous test).
@@ -457,7 +456,7 @@ public class CombinedInputActionsTests : DriverTestFixture
 
     private void NavigateToClicksPageAndClickLink()
     {
-        driver.Url = clicksPage;
+        driver.Url = Urls.ClicksPage;
 
         WaitFor(() => { return driver.FindElement(By.Id("normal")); }, "Could not find element with id 'normal'");
         IWebElement link = driver.FindElement(By.Id("normal"));

@@ -18,7 +18,6 @@
 // </copyright>
 
 using System.Collections.ObjectModel;
-using OpenQA.Selenium.Tests.Infrastructure.Environment;
 
 namespace OpenQA.Selenium.Tests;
 
@@ -28,7 +27,7 @@ public class ElementEqualityTests : DriverTestFixture
     [Test]
     public void SameElementLookedUpDifferentWaysShouldBeEqual()
     {
-        driver.Url = (simpleTestPage);
+        driver.Url = (Urls.SimpleTestPage);
 
         IWebElement body = driver.FindElement(By.TagName("body"));
         IWebElement xbody = driver.FindElement(By.XPath("//body"));
@@ -39,7 +38,7 @@ public class ElementEqualityTests : DriverTestFixture
     [Test]
     public void DifferentElementsShouldNotBeEqual()
     {
-        driver.Url = (simpleTestPage);
+        driver.Url = (Urls.SimpleTestPage);
 
         ReadOnlyCollection<IWebElement> ps = driver.FindElements(By.TagName("p"));
 
@@ -49,7 +48,7 @@ public class ElementEqualityTests : DriverTestFixture
     [Test]
     public void SameElementLookedUpDifferentWaysUsingFindElementShouldHaveSameHashCode()
     {
-        driver.Url = (simpleTestPage);
+        driver.Url = (Urls.SimpleTestPage);
         IWebElement body = driver.FindElement(By.TagName("body"));
         IWebElement xbody = driver.FindElement(By.XPath("//body"));
 
@@ -58,7 +57,7 @@ public class ElementEqualityTests : DriverTestFixture
 
     public void SameElementLookedUpDifferentWaysUsingFindElementsShouldHaveSameHashCode()
     {
-        driver.Url = (simpleTestPage);
+        driver.Url = (Urls.SimpleTestPage);
         ReadOnlyCollection<IWebElement> body = driver.FindElements(By.TagName("body"));
         ReadOnlyCollection<IWebElement> xbody = driver.FindElements(By.XPath("//body"));
 
@@ -68,7 +67,7 @@ public class ElementEqualityTests : DriverTestFixture
     [Test]
     public void AnElementFoundInViaJsShouldHaveSameId()
     {
-        driver.Url = EnvironmentManager.Instance.UrlBuilder.WhereIs("missedJsReference.html");
+        driver.Url = Urls.MissedJsReferencePage;
 
         driver.SwitchTo().Frame("inner");
         IWebElement first = driver.FindElement(By.Id("oneline"));

@@ -19,7 +19,6 @@
 
 using System.Collections.ObjectModel;
 using OpenQA.Selenium.Internal;
-using OpenQA.Selenium.Tests.Infrastructure.Environment;
 using OpenQA.Selenium.VirtualAuth;
 using static OpenQA.Selenium.VirtualAuth.VirtualAuthenticatorOptions;
 
@@ -64,7 +63,7 @@ public class VirtualAuthenticatorTests : DriverTestFixture
 
         // Maximize window to ensure focus
         webDriver.Manage().Window.Maximize();
-        webDriver.Url = EnvironmentManager.Instance.UrlBuilder.WhereIs("virtual-authenticator.html");
+        webDriver.Url = Urls.WhereIs("virtual-authenticator.html");
     }
 
     [TearDown]
